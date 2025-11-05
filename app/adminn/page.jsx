@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Save, Upload, Image, Settings, Eye, LogIn, LogOut, Plus, Search, Filter, Edit, Trash2,
-  ChevronLeft, ChevronRight, Tag, Package, CheckCircle, X
+  ChevronLeft, ChevronRight, Tag, Package, CheckCircle, X, BarChart3, Shield, Bell, DollarSign, TrendingUp
  } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost/APIpage";
@@ -1045,6 +1045,11 @@ const BundleDetailModal = ({ bundle, onClose }) => {
 
 
 export default function AdminDashboard() {
+  const [user, setUser] = useState({
+  name: "Admin User",
+  role: "Administrator",
+  lastLogin: new Date().toLocaleDateString()
+});
   const [content, setContent] = useState({
     hero: {
       title: "Radiant Skin Starts Here",
@@ -1087,28 +1092,6 @@ export default function AdminDashboard() {
         description: "We focus on enhancing your natural beauty with subtle, effective treatments."
       },
   ]},
-    testimonials: [
-      {
-        name: "Sarah Johnson",
-        service: "Acne Treatment",
-        text: "After struggling with acne for years, Lizly gave me clear, confident skin. The team is amazing!"
-      },
-      {
-        name: "Maria Garcia",
-        service: "Anti-Aging",
-        text: "The anti-aging treatments worked wonders! My skin has never looked better. Highly recommended!"
-      },
-      {
-        name: "James Wilson",
-        service: "Laser Therapy",
-        text: "Professional service and outstanding results. The laser treatment exceeded my expectations."
-      }
-    ],
-    contact: {
-      phone: "(555) 123-4567",
-      email: "info@lizlyskincare.com",
-      address: "123 Beauty Street, City, State 12345"
-    }
   });
 
   const [images, setImages] = useState({
@@ -1160,7 +1143,106 @@ const [isServiceAnimating, setIsServiceAnimating] = useState(false);
     checkAuth();
   }, []);
 
-  // Add these functions after your existing API functions
+  const [memberships, setMemberships] = useState({
+  basic: {
+    name: "Basic",
+    price: 3000,
+    consumable: 6000,
+    features: ["Essential treatments", "Basic facial services", "Standard consultations"]
+  },
+  pro: {
+    name: "Pro",
+    price: 6000, 
+    consumable: 10000,
+    features: ["All Basic features", "Advanced treatments", "Laser therapies", "Priority scheduling"]
+  },
+  promo: {
+    name: "Promo",
+    price: "Special",
+    consumable: "Custom",
+    features: ["Seasonal offers", "Limited time deals", "Bundle packages", "Exclusive treatments"]
+  }
+});
+
+// Add this function to handle membership changes
+const handleMembershipChange = (tier, field, value, featureIndex = null) => {
+  setMemberships(prev => {
+    if (featureIndex !== null) {
+      // Update specific feature
+      const updatedFeatures = [...prev[tier].features];
+      updatedFeatures[featureIndex] = value;
+      return {
+        ...prev,
+        [tier]: {
+          ...prev[tier],
+          features: updatedFeatures
+        }
+      };
+    } else if (field === 'features') {
+      // Handle features as array from textarea
+      const features = value.split('\n').filter(feature => feature.trim() !== '');
+      return {
+        ...prev,
+        [tier]: {
+          ...prev[tier],
+          features: features
+        }
+      };
+    } else {
+      // Update other fields
+      return {
+        ...prev,
+        [tier]: {
+          ...prev[tier],
+          [field]: field === 'price' || field === 'consumable' ? 
+                   (value === '' ? '' : (tier === 'promo' ? value : Number(value))) : 
+                   value
+        }
+      };
+    }
+  });
+};
+
+// Add this function to save memberships to database
+const saveMemberships = async () => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const response = await fetch(`${API_BASE}/content.php?action=updateSection`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": token
+      },
+      body: JSON.stringify({
+        section: "memberships",
+        content: memberships
+      })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      showMessage('Memberships updated successfully!');
+    } else {
+      showMessage(data.error || "Failed to save memberships", 'error');
+    }
+  } catch (error) {
+    showMessage("Save error: " + error.message, 'error');
+  }
+};
+
+// Add this function to load memberships from database
+const loadMemberships = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/content.php?action=getSection&section=memberships`);
+    const data = await response.json();
+    
+    if (data.success && data.data.content) {
+      setMemberships(data.data.content);
+    }
+  } catch (error) {
+    console.error("Failed to load memberships:", error);
+  }
+};
 
 // Promos Management
 const fetchPromos = async () => {
@@ -1445,8 +1527,9 @@ const checkAuth = async () => {
         await loadContent();
         await loadImages();
         await fetchServices();
-        await fetchPromos(); // Add this
-        await fetchBundles(); // Add this
+        await fetchPromos();
+        await fetchBundles();
+        await loadMemberships(); // Add this line
       } else {
         localStorage.removeItem("adminToken");
       }
@@ -1720,123 +1803,173 @@ const checkAuth = async () => {
 
   // Main Admin Dashboard
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Lizly Skin Care Admin</h1>
-              <p className="text-gray-600">Manage your landing page content and images</p>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={previewSite}
-                className="flex items-center gap-2 bg-lime-600 text-white px-6 py-3 rounded-lg hover:bg-lime-700 transition-colors"
-              >
-                <Eye size={20} />
-                Preview Site
-              </button>
-              <button
-                onClick={saveChanges}
-                className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Save size={20} />
-                Save Changes
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                <LogOut size={20} />
-                Logout
-              </button>
-            </div>
-          </div>
-          
-          {message.text && (
-            <div className={`mt-4 p-3 rounded-lg ${
-              message.type === 'error' 
-                ? 'bg-red-100 text-red-700' 
-                : 'bg-green-100 text-green-700'
-            }`}>
-              {message.text}
-            </div>
-          )}
-          
-          {saved && (
-            <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-lg">
-              Changes saved successfully!
-            </div>
-          )}
-        </div>
+        {/* Enhanced Header */}
+<div className="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100">
+  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div className="flex items-center gap-4">
+      <div className="bg-gradient-to-r from-lime-500 to-green-500 p-3 rounded-2xl">
+        <Shield className="text-white" size={32} />
+      </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Lizly Skin Care Admin</h1>
+        <p className="text-gray-600 flex items-center gap-2 mt-1">
+          <span>Welcome back,</span>
+          <span className="font-semibold text-lime-600">{user?.name || 'Admin'}</span>
+          <span>•</span>
+          <span className="text-sm bg-lime-100 text-lime-800 px-2 py-1 rounded-full">
+            {user?.role || 'Administrator'}
+          </span>
+        </p>
+      </div>
+    </div>
 
-        {/* Tabs */}
-<div className="bg-white rounded-lg shadow-sm mb-6">
-  <div className="border-b border-gray-200">
-    <nav className="flex -mb-px overflow-x-auto">
-      <button
-        onClick={() => setActiveTab("content")}
-        className={`py-4 px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
-          activeTab === "content"
-            ? "border-lime-500 text-lime-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+    <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex items-center gap-3">
+
+        <button
+          onClick={previewSite}
+          className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+        >
+          <Eye size={18} />
+          Preview Site
+        </button>
+      </div>
+      
+      <div className="flex gap-3">
+        <button
+          onClick={saveChanges}
+          className="flex items-center gap-2 bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-xl hover:from-lime-700 hover:to-green-700 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl font-medium"
+        >
+          <Save size={18} />
+          Save Changes
+        </button>
+        
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 bg-gray-600 text-white px-4 py-3 rounded-xl hover:bg-gray-700 transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+        >
+          <LogOut size={18} />
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  {message.text && (
+    <div className={`mt-4 p-4 rounded-xl border-l-4 ${
+      message.type === 'error' 
+        ? 'bg-red-50 border-red-400 text-red-700' 
+        : 'bg-green-50 border-green-400 text-green-700'
+    }`}>
+      <div className="flex items-center gap-2">
+        {message.type === 'error' ? (
+          <X className="text-red-500" size={20} />
+        ) : (
+          <CheckCircle className="text-green-500" size={20} />
+        )}
+        <span className="font-medium">{message.text}</span>
+      </div>
+    </div>
+  )}
+  
+  {saved && (
+    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+      <div className="flex items-center gap-2 text-green-700">
+        <CheckCircle size={20} />
+        <span className="font-medium">Changes saved successfully!</span>
+      </div>
+    </div>
+  )}
+</div>
+
+
+{/* Stats Overview */}
+{activeTab === "content" && (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    {[
+      {
+        title: "Total Services",
+        value: services.length,
+        icon: <Package className="text-blue-500" size={24} />,
+        color: "bg-blue-50 border-blue-200",
+        change: "+12%",
+        trend: "up"
+      },
+      {
+        title: "Active Promos",
+        value: promos.filter(p => p.status === 'active').length,
+        icon: <Tag className="text-orange-500" size={24} />,
+        color: "bg-orange-50 border-orange-200",
+        change: "+5%",
+        trend: "up"
+      },
+      {
+        title: "Service Bundles",
+        value: bundles.length,
+        icon: <Package className="text-purple-500" size={24} />,
+        color: "bg-purple-50 border-purple-200",
+        change: "+8%",
+        trend: "up"
+      },
+      {
+        title: "Total Revenue",
+        value: "₱45.2K",
+        icon: <DollarSign className="text-green-500" size={24} />,
+        color: "bg-green-50 border-green-200",
+        change: "+23%",
+        trend: "up"
+      }
+    ].map((stat, index) => (
+      <div 
+        key={stat.title}
+        className={`bg-white rounded-2xl p-6 border-2 ${stat.color} shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1`}
       >
-        Content
-      </button>
-      <button
-        onClick={() => setActiveTab("images")}
-        className={`py-4 px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
-          activeTab === "images"
-            ? "border-lime-500 text-lime-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        Images
-      </button>
-      <button
-        onClick={() => setActiveTab("services")}
-        className={`py-4 px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
-          activeTab === "services"
-            ? "border-lime-500 text-lime-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        Services
-      </button>
-      <button
-        onClick={() => setActiveTab("promos")}
-        className={`py-4 px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
-          activeTab === "promos"
-            ? "border-lime-500 text-lime-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        <Tag size={16} className="inline mr-2" />
-        Promos
-      </button>
-      <button
-        onClick={() => setActiveTab("bundles")}
-        className={`py-4 px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
-          activeTab === "bundles"
-            ? "border-lime-500 text-lime-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        <Package size={16} className="inline mr-2" />
-        Bundles
-      </button>
-      <button
-        onClick={() => setActiveTab("settings")}
-        className={`py-4 px-6 border-b-2 font-medium text-sm whitespace-nowrap ${
-          activeTab === "settings"
-            ? "border-lime-500 text-lime-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        Settings
-      </button>
+        <div className="flex items-center justify-between mb-4">
+          <div className={`p-3 rounded-xl ${stat.color.replace('bg-', 'bg-').replace(' border-', ' ')}`}>
+            {stat.icon}
+          </div>
+          <div className={`flex items-center gap-1 text-sm font-medium ${
+            stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
+          }`}>
+            <TrendingUp size={14} />
+            <span>{stat.change}</span>
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+        <p className="text-gray-600 text-sm font-medium">{stat.title}</p>
+      </div>
+    ))}
+  </div>
+)}
+
+        {/* Enhanced Navigation Tabs */}
+<div className="bg-white rounded-2xl shadow-sm mb-6 border border-gray-100">
+  <div className="flex overflow-x-auto scrollbar-hide">
+    <nav className="flex -mb-px min-w-full">
+      {[
+        { id: "content", label: "Content", icon: <Edit size={18} /> },
+        { id: "images", label: "Images", icon: <Image size={18} /> },
+        { id: "memberships", label: "Memberships", icon: <Package size={18} /> },
+        { id: "services", label: "Services", icon: <Package size={18} /> },
+        { id: "promos", label: "Promos", icon: <Tag size={18} /> },
+        { id: "bundles", label: "Bundles", icon: <Package size={18} /> },
+        { id: "settings", label: "Settings", icon: <Settings size={18} /> },
+      ].map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => setActiveTab(tab.id)}
+          className={`flex items-center gap-2 py-4 px-6 border-b-2 font-medium text-sm whitespace-nowrap transition-all duration-300 ${
+            activeTab === tab.id
+              ? "border-lime-500 text-lime-600 bg-lime-50/50"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50/50"
+          }`}
+        >
+          {tab.icon}
+          {tab.label}
+        </button>
+      ))}
     </nav>
   </div>
 </div>
@@ -2148,6 +2281,251 @@ const checkAuth = async () => {
         }}
       />
     )}
+  </div>
+)}
+
+
+{/* Memberships Management Tab */}
+{activeTab === "memberships" && (
+  <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="flex justify-between items-center mb-6">
+      <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+        <Package size={24} />
+        Memberships Management
+      </h2>
+      <button
+        onClick={saveMemberships}
+        className="bg-lime-600 text-white px-4 py-2 rounded-lg hover:bg-lime-700 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center gap-2 shadow-lg hover:shadow-xl"
+      >
+        <Save size={20} />
+        Save Memberships
+      </button>
+    </div>
+
+    <div className="grid gap-8">
+      {/* Basic Membership */}
+      <div className="border-2 border-lime-200 rounded-xl p-6 bg-lime-50">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-3 h-8 bg-lime-500 rounded-full"></div>
+          <h3 className="text-xl font-bold text-gray-800">Basic Membership</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Membership Name
+            </label>
+            <input
+              type="text"
+              value={memberships.basic.name}
+              onChange={(e) => handleMembershipChange('basic', 'name', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price (₱)
+              </label>
+              <input
+                type="number"
+                value={memberships.basic.price}
+                onChange={(e) => handleMembershipChange('basic', 'price', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+                min="0"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Consumable (₱)
+              </label>
+              <input
+                type="number"
+                value={memberships.basic.consumable}
+                onChange={(e) => handleMembershipChange('basic', 'consumable', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Features (one per line)
+          </label>
+          <textarea
+            value={memberships.basic.features.join('\n')}
+            onChange={(e) => handleMembershipChange('basic', 'features', e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+            placeholder="Enter each feature on a new line"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            {memberships.basic.features.length} features
+          </p>
+        </div>
+      </div>
+
+      {/* Pro Membership */}
+      <div className="border-2 border-green-200 rounded-xl p-6 bg-green-50">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-3 h-8 bg-green-500 rounded-full"></div>
+          <h3 className="text-xl font-bold text-gray-800">Pro Membership</h3>
+          <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            MOST POPULAR
+          </span>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Membership Name
+            </label>
+            <input
+              type="text"
+              value={memberships.pro.name}
+              onChange={(e) => handleMembershipChange('pro', 'name', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price (₱)
+              </label>
+              <input
+                type="number"
+                value={memberships.pro.price}
+                onChange={(e) => handleMembershipChange('pro', 'price', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+                min="0"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Consumable (₱)
+              </label>
+              <input
+                type="number"
+                value={memberships.pro.consumable}
+                onChange={(e) => handleMembershipChange('pro', 'consumable', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Features (one per line)
+          </label>
+          <textarea
+            value={memberships.pro.features.join('\n')}
+            onChange={(e) => handleMembershipChange('pro', 'features', e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+            placeholder="Enter each feature on a new line"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            {memberships.pro.features.length} features
+          </p>
+        </div>
+      </div>
+
+      {/* Promo Membership */}
+      <div className="border-2 border-yellow-200 rounded-xl p-6 bg-yellow-50">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-3 h-8 bg-yellow-500 rounded-full"></div>
+          <h3 className="text-xl font-bold text-gray-800">Promo Membership</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Membership Name
+            </label>
+            <input
+              type="text"
+              value={memberships.promo.name}
+              onChange={(e) => handleMembershipChange('promo', 'name', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price Display
+              </label>
+              <input
+                type="text"
+                value={memberships.promo.price}
+                onChange={(e) => handleMembershipChange('promo', 'price', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+                placeholder="e.g., Special, Custom, etc."
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Consumable Display
+              </label>
+              <input
+                type="text"
+                value={memberships.promo.consumable}
+                onChange={(e) => handleMembershipChange('promo', 'consumable', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+                placeholder="e.g., Custom, Varies, etc."
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Features (one per line)
+          </label>
+          <textarea
+            value={memberships.promo.features.join('\n')}
+            onChange={(e) => handleMembershipChange('promo', 'features', e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
+            placeholder="Enter each feature on a new line"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            {memberships.promo.features.length} features
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* Summary Card */}
+    <div className="mt-8 bg-gray-50 rounded-xl p-6 border border-gray-200">
+      <h4 className="text-lg font-semibold text-gray-800 mb-4">Memberships Summary</h4>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="text-center p-4 bg-white rounded-lg border border-lime-200">
+          <div className="text-2xl font-bold text-lime-600">₱{memberships.basic.price}</div>
+          <div className="text-sm text-gray-600">Basic Membership</div>
+          <div className="text-xs text-gray-500 mt-1">₱{memberships.basic.consumable} consumable</div>
+        </div>
+        <div className="text-center p-4 bg-white rounded-lg border border-green-200">
+          <div className="text-2xl font-bold text-green-600">₱{memberships.pro.price}</div>
+          <div className="text-sm text-gray-600">Pro Membership</div>
+          <div className="text-xs text-gray-500 mt-1">₱{memberships.pro.consumable} consumable</div>
+        </div>
+        <div className="text-center p-4 bg-white rounded-lg border border-yellow-200">
+          <div className="text-2xl font-bold text-yellow-600">{memberships.promo.price}</div>
+          <div className="text-sm text-gray-600">Promo Membership</div>
+          <div className="text-xs text-gray-500 mt-1">{memberships.promo.consumable} pricing</div>
+        </div>
+      </div>
+    </div>
   </div>
 )}
 
@@ -2966,41 +3344,6 @@ const checkAuth = async () => {
   )}
 </div>
 
-            {/* Testimonials Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Testimonials</h2>
-              <div className="grid gap-6">
-                {content.testimonials?.map((testimonial, index) => (
-                  <div key={index} className="border-l-4 border-green-500 pl-4">
-                    <h3 className="text-lg font-medium mb-3 text-gray-800">Testimonial {index + 1}</h3>
-                    <div className="grid gap-4">
-                      <input
-                        type="text"
-                        value={testimonial.name}
-                        onChange={(e) => handleContentChange("testimonials", "name", e.target.value, index)}
-                        placeholder="Customer Name"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
-                      />
-                      <input
-                        type="text"
-                        value={testimonial.service}
-                        onChange={(e) => handleContentChange("testimonials", "service", e.target.value, index)}
-                        placeholder="Service Used"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
-                      />
-                      <textarea
-                        value={testimonial.text}
-                        onChange={(e) => handleContentChange("testimonials", "text", e.target.value, index)}
-                        placeholder="Testimonial Text"
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Contact Information */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Contact Information</h2>
@@ -3182,74 +3525,105 @@ const checkAuth = async () => {
           </div>
         )}
       </div>
+      {/* Enhanced Global Styles */}
       <style jsx global>{`
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
 
-  @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
 
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
 
-  @keyframes popIn {
-    0% {
-      opacity: 0;
-      transform: scale(0.8) translateY(10px);
-    }
-    50% {
-      opacity: 0.8;
-      transform: scale(1.05) translateY(-2px);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
+        @keyframes popIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+          }
+          50% {
+            opacity: 0.8;
+            transform: scale(1.05) translateY(-5px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
 
-  /* Smooth transitions for all interactive elements */
-  button, select, input {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+        @keyframes shimmer {
+          0% {
+            background-position: -468px 0;
+          }
+          100% {
+            background-position: 468px 0;
+          }
+        }
 
-  /* Loading animation for pagination */
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
+        /* Smooth transitions */
+        * {
+          transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
 
-  .pagination-loading {
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-`}</style>
+        /* Custom scrollbar */
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        /* Loading animation */
+        .shimmer {
+          animation: shimmer 1.5s infinite linear;
+          background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+          background-size: 800px 104px;
+        }
+
+        /* Enhanced focus states */
+        input:focus, select:focus, textarea:focus {
+          box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        /* Hover effects */
+        .hover-lift:hover {
+          transform: translateY(-2px);
+        }
+
+        /* Gradient text */
+        .gradient-text {
+          background: linear-gradient(135deg, #65a30d 0%, #16a34a 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+      `}</style>
     </div>
   );
 }

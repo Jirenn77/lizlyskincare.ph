@@ -38,6 +38,26 @@ export default function Home() {
   const [showContactModal, setShowContactModal] = useState(false);
   const sectionRefs = useRef([]);
   const [servicesDropdown, setServicesDropdown] = useState(false);
+  const [memberships, setMemberships] = useState({
+  basic: {
+    name: "Basic",
+    price: 3000,
+    consumable: 6000,
+    features: ["Essential treatments", "Basic facial services", "Standard consultations"]
+  },
+  pro: {
+    name: "Pro",
+    price: 6000, 
+    consumable: 10000,
+    features: ["All Basic features", "Advanced treatments", "Laser therapies", "Priority scheduling"]
+  },
+  promo: {
+    name: "Promo",
+    price: "Special",
+    consumable: "Custom",
+    features: ["Seasonal offers", "Limited time deals", "Bundle packages", "Exclusive treatments"]
+  }
+});
 
   const handleServiceScroll = (direction) => {
     const scrollContainer = document.getElementById("services-scroll");
@@ -119,23 +139,7 @@ export default function Home() {
         ],
       },
     ],
-    testimonials: [
-      {
-        name: "Sarah Johnson",
-        service: "Acne Treatment",
-        text: "After struggling with acne for years, Lizly gave me clear, confident skin. The team is amazing!",
-      },
-      {
-        name: "Maria Garcia",
-        service: "Anti-Aging",
-        text: "The anti-aging treatments worked wonders! My skin has never looked better. Highly recommended!",
-      },
-      {
-        name: "James Wilson",
-        service: "Laser Therapy",
-        text: "Professional service and outstanding results. The laser treatment exceeded my expectations.",
-      },
-    ],
+    
     contact: {
       phone: "(555) 123-4567",
       email: "info@lizlyskincare.com",
@@ -165,54 +169,71 @@ export default function Home() {
     }
   }, [currentContent.services]); // Now currentContent is defined
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
+  const loadMemberships = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/content.php?action=getSection&section=memberships`);
+    const data = await response.json();
+    
+    if (data.success && data.data.content) {
+      setMemberships(data.data.content);
+    }
+  } catch (error) {
+    console.error("Failed to load memberships:", error);
+  }
+};
 
-        // Load images
-        const imagesResponse = await fetch(
-          `${API_BASE}/images.php?action=getAll`
-        );
-        const imagesData = await imagesResponse.json();
-        console.log("Images API response:", imagesData);
+    useEffect(() => {
+  const loadData = async () => {
+    try {
+      setLoading(true);
 
-        if (imagesData.success && imagesData.data && imagesData.data.images) {
-          const loadedImages = {};
-          Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
-            if (imageInfo && imageInfo.url) {
-              loadedImages[key] = imageInfo.url.startsWith("http")
-                ? imageInfo.url
-                : `${API_BASE}/${imageInfo.url}`;
-            }
-          });
-          setImages(loadedImages);
-        }
+      // Load images
+      const imagesResponse = await fetch(
+        `${API_BASE}/images.php?action=getAll`
+      );
+      const imagesData = await imagesResponse.json();
+      console.log("Images API response:", imagesData);
 
-        // Load content
-        const contentResponse = await fetch(
-          `${API_BASE}/content.php?action=getAll`
-        );
-        const contentData = await contentResponse.json();
-        console.log("Content API response:", contentData);
-
-        if (
-          contentData.success &&
-          contentData.data &&
-          contentData.data.content
-        ) {
-          setContent(contentData.data.content);
-        }
-      } catch (error) {
-        console.error("Failed to load data:", error);
-      } finally {
-        setLoading(false);
-        setTimeout(() => setIsVisible(true), 100);
+      if (imagesData.success && imagesData.data && imagesData.data.images) {
+        const loadedImages = {};
+        Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
+          if (imageInfo && imageInfo.url) {
+            loadedImages[key] = imageInfo.url.startsWith("http")
+              ? imageInfo.url
+              : `${API_BASE}/${imageInfo.url}`;
+          }
+        });
+        setImages(loadedImages);
       }
-    };
 
-    loadData();
-  }, []);
+      // Load content
+      const contentResponse = await fetch(
+        `${API_BASE}/content.php?action=getAll`
+      );
+      const contentData = await contentResponse.json();
+      console.log("Content API response:", contentData);
+
+      if (
+        contentData.success &&
+        contentData.data &&
+        contentData.data.content
+      ) {
+        setContent(contentData.data.content);
+      }
+
+      // Load memberships
+      await loadMemberships();
+      
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setLoading(false);
+      setTimeout(() => setIsVisible(true), 100);
+    }
+  };
+
+  loadData();
+}, []);
 
   useEffect(() => {
     const observerOptions = {
@@ -779,7 +800,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Memberships Section */}
+{/* Memberships Section */}
 <section
   id="memberships"
   className="scroll-section py-20 bg-white"
@@ -802,37 +823,24 @@ export default function Home() {
         style={{ animationDelay: "0ms" }}
       >
         <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Basic</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">{memberships.basic.name}</h3>
           <div className="flex items-baseline justify-center gap-1">
-            <span className="text-4xl font-bold text-lime-700">₱3,000</span>
+            <span className="text-4xl font-bold text-lime-700">₱{memberships.basic.price}</span>
           </div>
-          <p className="text-gray-600 mt-2">Consumable Amount: ₱6,000</p>
+          <p className="text-gray-600 mt-2">Consumable Amount: ₱{memberships.basic.consumable}</p>
         </div>
         
         <div className="space-y-4 mb-6">
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-lime-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-lime-700 text-sm">✓</span>
+          {memberships.basic.features.map((feature, index) => (
+            <div key={index} className="flex items-center">
+              <div className="w-6 h-6 bg-lime-100 rounded-full flex items-center justify-center mr-3">
+                <span className="text-lime-700 text-sm">✓</span>
+              </div>
+              <span className="text-gray-700">{feature}</span>
             </div>
-            <span className="text-gray-700">Essential treatments</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-lime-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-lime-700 text-sm">✓</span>
-            </div>
-            <span className="text-gray-700">Basic facial services</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-lime-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-lime-700 text-sm">✓</span>
-            </div>
-            <span className="text-gray-700">Standard consultations</span>
-          </div>
+          ))}
         </div>
         
-        <button className="w-full bg-gradient-to-r from-lime-600 to-green-600 text-white py-3 rounded-full hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium">
-          Get Started
-        </button>
       </div>
 
       {/* Pro Membership */}
@@ -845,43 +853,24 @@ export default function Home() {
         </div>
         
         <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">{memberships.pro.name}</h3>
           <div className="flex items-baseline justify-center gap-1">
-            <span className="text-4xl font-bold text-green-700">₱6,000</span>
+            <span className="text-4xl font-bold text-green-700">₱{memberships.pro.price}</span>
           </div>
-          <p className="text-gray-600 mt-2">Consumable Amount: ₱10,000</p>
+          <p className="text-gray-600 mt-2">Consumable Amount: ₱{memberships.pro.consumable}</p>
         </div>
         
         <div className="space-y-4 mb-6">
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-green-700 text-sm">✓</span>
+          {memberships.pro.features.map((feature, index) => (
+            <div key={index} className="flex items-center">
+              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <span className="text-green-700 text-sm">✓</span>
+              </div>
+              <span className="text-gray-700">{feature}</span>
             </div>
-            <span className="text-gray-700">All Basic features</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-green-700 text-sm">✓</span>
-            </div>
-            <span className="text-gray-700">Advanced treatments</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-green-700 text-sm">✓</span>
-            </div>
-            <span className="text-gray-700">Laser therapies</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-green-700 text-sm">✓</span>
-            </div>
-            <span className="text-gray-700">Priority scheduling</span>
-          </div>
+          ))}
         </div>
         
-        <button className="w-full bg-gradient-to-r from-green-600 to-lime-600 text-white py-3 rounded-full hover:from-green-700 hover:to-lime-700 transition-all duration-300 font-medium">
-          Get Started
-        </button>
       </div>
 
       {/* Promo Membership */}
@@ -890,43 +879,24 @@ export default function Home() {
         style={{ animationDelay: "400ms" }}
       >
         <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Promo</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">{memberships.promo.name}</h3>
           <div className="flex items-baseline justify-center gap-1">
-            <span className="text-4xl font-bold text-yellow-600">Special</span>
+            <span className="text-4xl font-bold text-yellow-600">{memberships.promo.price}</span>
           </div>
-          <p className="text-gray-600 mt-2">Custom pricing & benefits</p>
+          <p className="text-gray-600 mt-2">{memberships.promo.consumable} pricing & benefits</p>
         </div>
         
         <div className="space-y-4 mb-6">
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-yellow-600 text-sm">✓</span>
+          {memberships.promo.features.map((feature, index) => (
+            <div key={index} className="flex items-center">
+              <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                <span className="text-yellow-600 text-sm">✓</span>
+              </div>
+              <span className="text-gray-700">{feature}</span>
             </div>
-            <span className="text-gray-700">Seasonal offers</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-yellow-600 text-sm">✓</span>
-            </div>
-            <span className="text-gray-700">Limited time deals</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-yellow-600 text-sm">✓</span>
-            </div>
-            <span className="text-gray-700">Bundle packages</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-yellow-600 text-sm">✓</span>
-            </div>
-            <span className="text-gray-700">Exclusive treatments</span>
-          </div>
+          ))}
         </div>
         
-        <button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-full hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 font-medium">
-          View Current Promos
-        </button>
       </div>
     </div>
 
@@ -937,6 +907,7 @@ export default function Home() {
     </div>
   </div>
 </section>
+
 
       {/* CTA Section */}
       <section
@@ -953,10 +924,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="border-2 border-white text-white px-8 py-4 rounded-full hover:bg-white/10 transition-all duration-300 text-lg font-medium">
-              Call: {currentContent.contact?.phone}
-            </button>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-full hover:bg-white/10 transition-all duration-300 text-lg font-medium">
-              Follow our tiktok: {currentContent.contact?.email}
+              Visit Us Now!
             </button>
           </div>
         </div>
@@ -1037,8 +1005,7 @@ export default function Home() {
               <h3 className="text-lg font-semibold mb-4">Hours</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>Mon-Fri: 9AM-6PM</li>
-                <li>Saturday: 10AM-4PM</li>
-                <li>Sunday: Closed</li>
+                <li>Saturday-Sunday: 10AM-4PM</li>
               </ul>
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Search, Filter, ChevronLeft, ChevronRight, Leaf, X } from "lucide-react";
+import { ArrowLeft, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, Leaf, X } from "lucide-react";
 import Link from "next/link";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost/APIpage";
@@ -19,7 +19,45 @@ export default function AllServices() {
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [servicesDropdown, setServicesDropdown] = useState(false);
 
+  const handleServiceScroll = (direction) => {
+    const scrollContainer = document.getElementById("services-scroll");
+    const serviceCards = document.querySelectorAll("#services-scroll > div");
+    const cardWidth = serviceCards[0]?.offsetWidth + 24; // 24px for gap
+
+    if (scrollContainer && serviceCards.length > 0) {
+      const scrollAmount = cardWidth * 4; // Scroll 4 cards at a time
+
+      if (direction === "next") {
+        scrollContainer.scrollBy({ left: scrollAmount, behavior: "smooth" });
+        setCurrentServicePage((prev) =>
+          Math.min(prev + 1, Math.ceil(serviceCards.length / 4))
+        );
+      } else {
+        scrollContainer.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+        setCurrentServicePage((prev) => Math.max(prev - 1, 1));
+      }
+    }
+  };
+
+  const scrollToServicePage = (pageIndex) => {
+    const scrollContainer = document.getElementById("services-scroll");
+    const serviceCards = document.querySelectorAll("#services-scroll > div");
+    const cardWidth = serviceCards[0]?.offsetWidth + 24; // 24px for gap
+
+    if (scrollContainer && serviceCards.length > 0) {
+      const scrollPosition = pageIndex * cardWidth * 4;
+      scrollContainer.scrollTo({ left: scrollPosition, behavior: "smooth" });
+      setCurrentServicePage(pageIndex + 1);
+    }
+  };
+
+  const addToRefs = (el) => {
+    if (el && !sectionRefs.current.includes(el)) {
+      sectionRefs.current.push(el);
+    }
+  };
 
   useEffect(() => {
     fetchServices();
@@ -138,127 +176,263 @@ export default function AllServices() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation - Same as Home Page */}
-      <nav
-        className={`fixed w-full bg-white/80 backdrop-blur-md z-50 shadow-sm transition-all duration-500 ${
-          isVisible ? "translate-y-0" : "-translate-y-full"
-        }`}
-      >
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3 group cursor-pointer">
-              <div className="p-3 bg-lime-200 rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-12">
-                <Leaf className="text-lime-700" size={32} />
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-gray-800 block">
-                  Lizly
-                </span>
-                <span className="text-sm bg-gradient-to-r from-lime-700 to-green-600 bg-clip-text text-transparent font-medium">
-                  Skin Care
-                </span>
-              </div>
-            </Link>
+      {/* Animated Background Elements - Same as Home Page */}
+<div className="fixed inset-0 -z-10 overflow-hidden">
+  <div className="absolute -top-40 -right-32 w-80 h-80 bg-lime-100 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+  <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-green-100 rounded-full blur-3xl opacity-30 animate-pulse delay-1000"></div>
+</div>
 
-            <div className="hidden md:flex space-x-8">
-              {["Home", "Services", "About", "Testimonials"].map(
-                (item, index) => (
-                  <a
-                    key={item}
-                    href={item === "Home" ? "/" : `/#${item.toLowerCase()}`}
-                    className="text-gray-600 hover:text-lime-600 transition-all duration-300 font-medium relative group"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    {item}
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-lime-600 transition-all duration-300 group-hover:w-full"></span>
-                  </a>
-                )
+{/* Navigation - Enhanced with Dropdown like Home Page */}
+<nav
+  className={`fixed w-full bg-white/80 backdrop-blur-md z-50 shadow-sm transition-all duration-500 ${
+    isVisible ? "translate-y-0" : "-translate-y-full"
+  }`}
+>
+  <div className="container mx-auto px-6 py-4">
+    <div className="flex items-center justify-between">
+      <Link href="/" className="flex items-center space-x-3 group cursor-pointer">
+        <div className="p-3 bg-lime-200 rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-12">
+          <Leaf className="text-lime-700" size={32} />
+        </div>
+        <div>
+          <span className="text-2xl font-bold text-gray-800 block">
+            Lizly
+          </span>
+          <span className="text-sm bg-gradient-to-r from-lime-700 to-green-600 bg-clip-text text-transparent font-medium">
+            Skin Care
+          </span>
+        </div>
+      </Link>
+
+      <div className="hidden md:flex space-x-8">
+        {["Home", "Services", "About", "Memberships"].map(
+          (item, index) => (
+            <div key={item} className="relative">
+              {item === "Services" ? (
+                <div
+                  onMouseEnter={() => setServicesDropdown(true)}
+                  onMouseLeave={() => setServicesDropdown(false)}
+                  className="relative"
+                >
+                  <button className="text-gray-600 hover:text-lime-600 transition-all duration-300 font-medium flex items-center space-x-1 group">
+                    <span>{item}</span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-300 ${
+                        servicesDropdown ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Services Dropdown Menu */}
+                  {servicesDropdown && (
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-lime-100 z-50 animate-scaleIn">
+                      <div className="p-4">
+                        <div className="mb-3 pb-2 border-b border-lime-100">
+                          <h3 className="font-semibold text-gray-900 mb-2 text-sm uppercase tracking-wide text-lime-700">
+                            Special Offers
+                          </h3>
+                          <div className="space-y-2">
+                            <Link
+                              href="/promos"
+                              className="block py-2 px-3 rounded-lg hover:bg-lime-50 transition-all duration-200 group"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-700 group-hover:text-lime-700 font-medium">
+                                  Seasonal Promos
+                                </span>
+                                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                                  HOT
+                                </div>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Limited time discounts
+                              </p>
+                            </Link>
+
+                            <Link
+                              href="/bundles"
+                              className="block py-2 px-3 rounded-lg hover:bg-lime-50 transition-all duration-200 group"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-700 group-hover:text-lime-700 font-medium">
+                                  Treatment Bundles
+                                </span>
+                                <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                  SAVE
+                                </div>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Package deals & savings
+                              </p>
+                            </Link>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Link
+                            href="/services"
+                            className="block py-2 px-3 rounded-lg bg-lime-50 text-lime-700 font-semibold transition-all duration-200 group hover:bg-lime-100 mt-2"
+                          >
+                            <span className="text-sm">
+                              View All Services →
+                            </span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href={item === "Home" ? "/" : `/#${item.toLowerCase()}`}
+                  className="text-gray-600 hover:text-lime-600 transition-all duration-300 font-medium relative group"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {item}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-lime-600 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
               )}
             </div>
+          )
+        )}
+      </div>
 
-            <button 
-              onClick={() => setShowContactModal(true)}
-              className="bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-full hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              Contact Us
-            </button>
-          </div>
-        </div>
-      </nav>
+      <button 
+        onClick={() => setShowContactModal(true)}
+        className="bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-full hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+      >
+        Contact Us
+      </button>
+    </div>
+  </div>
+</nav>
 
       {/* Contact Modal */}
-      {showContactModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">Contact Our Branches</h3>
-                <button 
-                  onClick={() => setShowContactModal(false)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <X size={30} />
-                </button>
+{showContactModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold text-gray-900">
+            Contact Our Branches
+          </h3>
+          <button
+            onClick={() => setShowContactModal(false)}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <X size={30} />
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Main Contact Info */}
+          <div className="bg-lime-50 p-4 rounded-xl border border-lime-200">
+            <h4 className="font-semibold text-lime-700 mb-2">
+              Main Contact Information
+            </h4>
+            <p className="text-gray-700">
+              📞 Phone: <strong>09659689481</strong>
+            </p>
+            <p className="text-gray-700">
+              📧 Email: <strong>lizlyskincare@gmail.com</strong>
+            </p>
+          </div>
+
+          {/* Social Media */}
+          <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+            <h4 className="font-semibold text-green-700 mb-3">
+              Follow Us!
+            </h4>
+            <div className="space-y-2">
+              <p className="text-gray-700">
+                {" "}
+                TikTok: <strong>@lizlyskincare</strong>
+              </p>
+              <p className="text-gray-700">
+                {" "}
+                YouTube: <strong>lizlyskincareclinic.youtube.com</strong>
+              </p>
+              <p className="text-gray-700">
+                {" "}
+                Facebook: <strong>Lizly Skincare</strong>
+              </p>
+            </div>
+          </div>
+
+          {/* Branches */}
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-4">
+              Our Branches
+            </h4>
+            <div className="space-y-4">
+              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <h5 className="font-medium text-green-700 mb-2">
+                  CDO Main Branch
+                </h5>
+                <p className="text-gray-700 text-sm">
+                  Condoy Building Room 201, Pabayo Gomez Street, CDO
+                </p>
+                <p className="text-gray-600 text-sm mt-1">
+                  📞 09659689481
+                </p>
               </div>
-              
-              <div className="space-y-6">
-                {/* Main Contact Info */}
-                <div className="bg-lime-50 p-4 rounded-xl border border-lime-200">
-                  <h4 className="font-semibold text-lime-700 mb-2">Main Contact Information</h4>
-                  <p className="text-gray-700">📞 Phone: <strong>09659689481</strong></p>
-                  <p className="text-gray-700">📧 Email: <strong>lizlyskincare@gmail.com</strong></p>
-                </div>
-      
-                {/* Social Media */}
-                <div className="bg-green-50 p-4 rounded-xl border border-green-200">
-                  <h4 className="font-semibold text-green-700 mb-3">Follow Us!</h4>
-                  <div className="space-y-2">
-                    <p className="text-gray-700"> TikTok: <strong>@lizlyskincare</strong></p>
-                    <p className="text-gray-700"> YouTube: <strong>lizlyskincareclinic.youtube.com</strong></p>
-                    <p className="text-gray-700"> Facebook: <strong>Lizly Skincare</strong></p>
-                  </div>
-                </div>
-      
-                {/* Branches */}
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-4">Our Branches</h4>
-                  <div className="space-y-4">
-                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                      <h5 className="font-medium text-lime-600 mb-2">CDO Main Branch</h5>
-                      <p className="text-gray-700 text-sm">Condoy Building Room 201, Pabayo Gomez Street, CDO</p>
-                      <p className="text-gray-600 text-sm mt-1">📞 09659689481</p>
-                    </div>
-      
-                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                      <h5 className="font-medium text-lime-600 mb-2">Gingoog City Branch</h5>
-                      <p className="text-gray-700 text-sm">CV Lugod Street, Gingoog City</p>
-                      <p className="text-gray-600 text-sm mt-1">📞 09659689481</p>
-                    </div>
-      
-                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                      <h5 className="font-medium text-lime-600 mb-2">Camp Evangelista Branch</h5>
-                      <p className="text-gray-700 text-sm">Zone-1 Crossing Camp Evangelista</p>
-                      <p className="text-gray-600 text-sm mt-1">📞 09659689481</p>
-                    </div>
-      
-                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                      <h5 className="font-medium text-lime-600 mb-2">Patag CDO Branch</h5>
-                      <p className="text-gray-700 text-sm">Gwen's Place 3rd Door Patag, CDO</p>
-                      <p className="text-gray-600 text-sm mt-1">📞 09659689481</p>
-                    </div>
-      
-                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                      <h5 className="font-medium text-lime-600 mb-2">Manolo Fortich Branch</h5>
-                      <p className="text-gray-700 text-sm">Ostrea Building Door 2, L Binauro Street Tankulan Manolo Fortich Bukidnon</p>
-                      <p className="text-gray-600 text-sm mt-1">📞 09659689481</p>
-                    </div>
-                  </div>
-                </div>
+
+              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <h5 className="font-medium text-green-700 mb-2">
+                  Gingoog City Branch
+                </h5>
+                <p className="text-gray-700 text-sm">
+                  CV Lugod Street, Gingoog City
+                </p>
+                <p className="text-gray-600 text-sm mt-1">
+                  📞 09659689481
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <h5 className="font-medium text-green-700 mb-2">
+                  Camp Evangelista Branch
+                </h5>
+                <p className="text-gray-700 text-sm">
+                  Zone-1 Crossing Camp Evangelista
+                </p>
+                <p className="text-gray-600 text-sm mt-1">
+                  📞 09659689481
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <h5 className="font-medium text-green-700 mb-2">
+                  Patag CDO Branch
+                </h5>
+                <p className="text-gray-700 text-sm">
+                  Gwen's Place 3rd Door Patag, CDO
+                </p>
+                <p className="text-gray-600 text-sm mt-1">
+                  📞 09659689481
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <h5 className="font-medium text-green-700 mb-2">
+                  Manolo Fortich Branch
+                </h5>
+                <p className="text-gray-700 text-sm">
+                  Ostrea Building Door 2, L Binauro Street Tankulan Manolo
+                  Fortich Bukidnon
+                </p>
+                <p className="text-gray-600 text-sm mt-1">
+                  📞 09659689481
+                </p>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Header - Adjusted for navigation spacing */}
       <div className="bg-white shadow-sm border-b pt-20">
@@ -393,11 +567,6 @@ export default function AllServices() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      <button className="flex-1 bg-lime-600 text-white py-2 px-4 rounded-lg hover:bg-lime-700 transition-colors font-medium text-sm">
-                        View Details
-                      </button>
-                    </div>
                   </div>
                 </div>
               ))}
