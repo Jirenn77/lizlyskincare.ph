@@ -19,7 +19,7 @@ export default function BundlesPage() {
   const fetchBundles = async () => {
     try {
       const response = await fetch(
-        `${API_BASE}/bundles.php?action=getAll&active_only=true`
+        `${API_BASE}/bundles2.php?action=getAll&active_only=true`
       );
       const data = await response.json();
 
