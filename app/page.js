@@ -14,7 +14,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost/APIpage";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lizlyskincare.sbs";
 
 export default function Home() {
   const [images, setImages] = useState({

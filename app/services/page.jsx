@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Search, Filter, ChevronLeft, ChevronRight, ChevronDown, Leaf, X } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost/APIpage";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lizlyskincare.sbs";
 
 export default function AllServices() {
   const [services, setServices] = useState([]);

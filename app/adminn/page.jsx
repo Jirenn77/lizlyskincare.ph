@@ -5,7 +5,7 @@ import { Save, Upload, Image, Settings, Eye, LogIn, LogOut, Plus, Search, Filter
   ChevronLeft, ChevronRight, Tag, Package, CheckCircle, X, BarChart3, Shield, Bell, DollarSign, TrendingUp
  } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost/APIpage";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lizlyskincare.sbs";
 
 
 const ServiceModal = ({ service, onSave, onClose }) => {
