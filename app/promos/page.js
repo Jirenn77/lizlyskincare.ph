@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Tag, Star, Clock, CheckCircle } from "lucide-react";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost/APIpage";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.lizlyskincare.sbs";
 
 export default function PromosPage() {
   const [promos, setPromos] = useState([]);
