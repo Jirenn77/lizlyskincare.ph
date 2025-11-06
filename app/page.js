@@ -39,25 +39,39 @@ export default function Home() {
   const sectionRefs = useRef([]);
   const [servicesDropdown, setServicesDropdown] = useState(false);
   const [memberships, setMemberships] = useState({
-  basic: {
-    name: "Basic",
-    price: 3000,
-    consumable: 6000,
-    features: ["Essential treatments", "Basic facial services", "Standard consultations"]
-  },
-  pro: {
-    name: "Pro",
-    price: 6000, 
-    consumable: 10000,
-    features: ["All Basic features", "Advanced treatments", "Laser therapies", "Priority scheduling"]
-  },
-  promo: {
-    name: "Promo",
-    price: "Special",
-    consumable: "Custom",
-    features: ["Seasonal offers", "Limited time deals", "Bundle packages", "Exclusive treatments"]
-  }
-});
+    basic: {
+      name: "Basic",
+      price: 3000,
+      consumable: 6000,
+      features: [
+        "Essential treatments",
+        "Basic facial services",
+        "Standard consultations",
+      ],
+    },
+    pro: {
+      name: "Pro",
+      price: 6000,
+      consumable: 10000,
+      features: [
+        "All Basic features",
+        "Advanced treatments",
+        "Laser therapies",
+        "Priority scheduling",
+      ],
+    },
+    promo: {
+      name: "Promo",
+      price: "Special",
+      consumable: "Custom",
+      features: [
+        "Seasonal offers",
+        "Limited time deals",
+        "Bundle packages",
+        "Exclusive treatments",
+      ],
+    },
+  });
 
   const handleServiceScroll = (direction) => {
     const scrollContainer = document.getElementById("services-scroll");
@@ -139,7 +153,7 @@ export default function Home() {
         ],
       },
     ],
-    
+
     contact: {
       phone: "(555) 123-4567",
       email: "info@lizlyskincare.com",
@@ -170,70 +184,70 @@ export default function Home() {
   }, [currentContent.services]); // Now currentContent is defined
 
   const loadMemberships = async () => {
-  try {
-    const response = await fetch(`${API_BASE}/content.php?action=getSection&section=memberships`);
-    const data = await response.json();
-    
-    if (data.success && data.data.content) {
-      setMemberships(data.data.content);
-    }
-  } catch (error) {
-    console.error("Failed to load memberships:", error);
-  }
-};
-
-    useEffect(() => {
-  const loadData = async () => {
     try {
-      setLoading(true);
-
-      // Load images
-      const imagesResponse = await fetch(
-        `${API_BASE}/images.php?action=getAll`
+      const response = await fetch(
+        `${API_BASE}/content.php?action=getSection&section=memberships`
       );
-      const imagesData = await imagesResponse.json();
-      console.log("Images API response:", imagesData);
+      const data = await response.json();
 
-      if (imagesData.success && imagesData.data && imagesData.data.images) {
-        const loadedImages = {};
-        Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
-          if (imageInfo && imageInfo.url) {
-            loadedImages[key] = imageInfo.url.startsWith("http")
-              ? imageInfo.url
-              : `${API_BASE}/${imageInfo.url}`;
-          }
-        });
-        setImages(loadedImages);
+      if (data.success && data.data.content) {
+        setMemberships(data.data.content);
       }
-
-      // Load content
-      const contentResponse = await fetch(
-        `${API_BASE}/content.php?action=getAll`
-      );
-      const contentData = await contentResponse.json();
-      console.log("Content API response:", contentData);
-
-      if (
-        contentData.success &&
-        contentData.data &&
-        contentData.data.content
-      ) {
-        setContent(contentData.data.content);
-      }
-
-      // Load memberships
-      await loadMemberships();
-      
     } catch (error) {
-      console.error("Failed to load data:", error);
-    } finally {
-      setLoading(false);
-      setTimeout(() => setIsVisible(true), 100);
+      console.error("Failed to load memberships:", error);
     }
   };
 
-  loadData();
-}, []);
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        // Load images
+        const imagesResponse = await fetch(
+          `${API_BASE}/images.php?action=getAll`
+        );
+        const imagesData = await imagesResponse.json();
+        console.log("Images API response:", imagesData);
+
+        if (imagesData.success && imagesData.data && imagesData.data.images) {
+          const loadedImages = {};
+          Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
+            if (imageInfo && imageInfo.url) {
+              // Use the URL provided by the API directly
+              loadedImages[key] = imageInfo.url;
+            }
+          });
+          setImages(loadedImages);
+        }
+
+        // Load content
+        const contentResponse = await fetch(
+          `${API_BASE}/content.php?action=getAll`
+        );
+        const contentData = await contentResponse.json();
+        console.log("Content API response:", contentData);
+
+        if (
+          contentData.success &&
+          contentData.data &&
+          contentData.data.content
+        ) {
+          setContent(contentData.data.content);
+        }
+
+        // Load memberships
+        await loadMemberships();
+      } catch (error) {
+        console.error("Failed to load data:", error);
+      } finally {
+        setLoading(false);
+        setTimeout(() => setIsVisible(true), 100);
+      }
+    };
+
+    loadData();
+  }, []);
 
   useEffect(() => {
     const observerOptions = {
@@ -403,130 +417,130 @@ export default function Home() {
       </nav>
 
       {/* Contact Modal */}
-{showContactModal && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide">
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-900">
-            Contact Our Branches
-          </h3>
-          <button
-            onClick={() => setShowContactModal(false)}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <X size={30} />
-          </button>
-        </div>
+      {showContactModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Contact Our Branches
+                </h3>
+                <button
+                  onClick={() => setShowContactModal(false)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <X size={30} />
+                </button>
+              </div>
 
-        <div className="space-y-6">
-          {/* Main Contact Info */}
-          <div className="bg-lime-50 p-4 rounded-xl border border-lime-200">
-            <h4 className="font-semibold text-lime-700 mb-2">
-              Main Contact Information
-            </h4>
-            <p className="text-gray-700">
-              📞 Phone: <strong>09659689481</strong>
-            </p>
-            <p className="text-gray-700">
-              📧 Email: <strong>lizlyskincare@gmail.com</strong>
-            </p>
-          </div>
+              <div className="space-y-6">
+                {/* Main Contact Info */}
+                <div className="bg-lime-50 p-4 rounded-xl border border-lime-200">
+                  <h4 className="font-semibold text-lime-700 mb-2">
+                    Main Contact Information
+                  </h4>
+                  <p className="text-gray-700">
+                    📞 Phone: <strong>09659689481</strong>
+                  </p>
+                  <p className="text-gray-700">
+                    📧 Email: <strong>lizlyskincare@gmail.com</strong>
+                  </p>
+                </div>
 
-          {/* Social Media */}
-          <div className="bg-green-50 p-4 rounded-xl border border-green-200">
-            <h4 className="font-semibold text-green-700 mb-3">
-              Follow Us!
-            </h4>
-            <div className="space-y-2">
-              <p className="text-gray-700">
-                {" "}
-                TikTok: <strong>@lizlyskincare</strong>
-              </p>
-              <p className="text-gray-700">
-                {" "}
-                YouTube: <strong>lizlyskincareclinic.youtube.com</strong>
-              </p>
-              <p className="text-gray-700">
-                {" "}
-                Facebook: <strong>Lizly Skincare</strong>
-              </p>
+                {/* Social Media */}
+                <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                  <h4 className="font-semibold text-green-700 mb-3">
+                    Follow Us!
+                  </h4>
+                  <div className="space-y-2">
+                    <p className="text-gray-700">
+                      {" "}
+                      TikTok: <strong>@lizlyskincare</strong>
+                    </p>
+                    <p className="text-gray-700">
+                      {" "}
+                      YouTube: <strong>lizlyskincareclinic.youtube.com</strong>
+                    </p>
+                    <p className="text-gray-700">
+                      {" "}
+                      Facebook: <strong>Lizly Skincare</strong>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Branches */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-4">
+                    Our Branches
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                      <h5 className="font-medium text-green-700 mb-2">
+                        CDO Main Branch
+                      </h5>
+                      <p className="text-gray-700 text-sm">
+                        Condoy Building Room 201, Pabayo Gomez Street, CDO
+                      </p>
+                      <p className="text-gray-600 text-sm mt-1">
+                        📞 09659689481
+                      </p>
+                    </div>
+
+                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                      <h5 className="font-medium text-green-700 mb-2">
+                        Gingoog City Branch
+                      </h5>
+                      <p className="text-gray-700 text-sm">
+                        CV Lugod Street, Gingoog City
+                      </p>
+                      <p className="text-gray-600 text-sm mt-1">
+                        📞 09659689481
+                      </p>
+                    </div>
+
+                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                      <h5 className="font-medium text-green-700 mb-2">
+                        Camp Evangelista Branch
+                      </h5>
+                      <p className="text-gray-700 text-sm">
+                        Zone-1 Crossing Camp Evangelista
+                      </p>
+                      <p className="text-gray-600 text-sm mt-1">
+                        📞 09659689481
+                      </p>
+                    </div>
+
+                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                      <h5 className="font-medium text-green-700 mb-2">
+                        Patag CDO Branch
+                      </h5>
+                      <p className="text-gray-700 text-sm">
+                        Gwen's Place 3rd Door Patag, CDO
+                      </p>
+                      <p className="text-gray-600 text-sm mt-1">
+                        📞 09659689481
+                      </p>
+                    </div>
+
+                    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                      <h5 className="font-medium text-green-700 mb-2">
+                        Manolo Fortich Branch
+                      </h5>
+                      <p className="text-gray-700 text-sm">
+                        Ostrea Building Door 2, L Binauro Street Tankulan Manolo
+                        Fortich Bukidnon
+                      </p>
+                      <p className="text-gray-600 text-sm mt-1">
+                        📞 09659689481
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Branches */}
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-4">
-              Our Branches
-            </h4>
-            <div className="space-y-4">
-              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <h5 className="font-medium text-green-700 mb-2">
-                  CDO Main Branch
-                </h5>
-                <p className="text-gray-700 text-sm">
-                  Condoy Building Room 201, Pabayo Gomez Street, CDO
-                </p>
-                <p className="text-gray-600 text-sm mt-1">
-                  📞 09659689481
-                </p>
-              </div>
-
-              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <h5 className="font-medium text-green-700 mb-2">
-                  Gingoog City Branch
-                </h5>
-                <p className="text-gray-700 text-sm">
-                  CV Lugod Street, Gingoog City
-                </p>
-                <p className="text-gray-600 text-sm mt-1">
-                  📞 09659689481
-                </p>
-              </div>
-
-              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <h5 className="font-medium text-green-700 mb-2">
-                  Camp Evangelista Branch
-                </h5>
-                <p className="text-gray-700 text-sm">
-                  Zone-1 Crossing Camp Evangelista
-                </p>
-                <p className="text-gray-600 text-sm mt-1">
-                  📞 09659689481
-                </p>
-              </div>
-
-              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <h5 className="font-medium text-green-700 mb-2">
-                  Patag CDO Branch
-                </h5>
-                <p className="text-gray-700 text-sm">
-                  Gwen's Place 3rd Door Patag, CDO
-                </p>
-                <p className="text-gray-600 text-sm mt-1">
-                  📞 09659689481
-                </p>
-              </div>
-
-              <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <h5 className="font-medium text-green-700 mb-2">
-                  Manolo Fortich Branch
-                </h5>
-                <p className="text-gray-700 text-sm">
-                  Ostrea Building Door 2, L Binauro Street Tankulan Manolo
-                  Fortich Bukidnon
-                </p>
-                <p className="text-gray-600 text-sm mt-1">
-                  📞 09659689481
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
       {/* Hero Section */}
       <section
@@ -575,12 +589,9 @@ export default function Home() {
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
                 <img
-                  src={`${API_BASE}/images.php?action=getImage&key=heroImage`}
+                  src={images.heroImage || "/placeholder-hero.jpg"}
                   alt="Lizly Skin Care Clinic"
                   className="relative rounded-2xl h-96 w-full object-cover shadow-xl"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                  }}
                 />
               </div>
             </div>
@@ -645,11 +656,19 @@ export default function Home() {
                           src={images[`service${index + 1}Image`]}
                           alt={service.title}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                          }}
                         />
-                      ) : null}
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-lime-100 to-green-100 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="w-10 h-10 bg-lime-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                              <Sparkles className="text-lime-700" size={20} />
+                            </div>
+                            <span className="text-lime-700 font-semibold text-sm">
+                              {service.title}
+                            </span>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Fallback content that shows when no image or image fails */}
                       <div
@@ -747,12 +766,9 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="relative">
               <img
-                src={`${API_BASE}/images.php?action=getImage&key=aboutImage`}
+                src={images.aboutImage || "/placeholder-about.jpg"}
                 alt="Clinic Interior"
                 className="rounded-2xl h-96 w-full object-cover shadow-xl"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
               />
             </div>
             <div>
@@ -800,114 +816,129 @@ export default function Home() {
         </div>
       </section>
 
-{/* Memberships Section */}
-<section
-  id="memberships"
-  className="scroll-section py-20 bg-white"
-  ref={addToRefs}
->
-  <div className="container mx-auto px-6">
-    <div className="text-center mb-16">
-      <h2 className="text-4xl font-bold text-gray-900 mb-4">
-        Our Memberships
-      </h2>
-      <p className="text-xl text-gray-600">
-        Choose the plan that works best for you
-      </p>
-    </div>
-
-    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-      {/* Basic Membership */}
-      <div
-        className="scroll-section bg-gradient-to-b from-lime-50 to-white p-8 rounded-2xl shadow-lg border border-lime-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-        style={{ animationDelay: "0ms" }}
+      {/* Memberships Section */}
+      <section
+        id="memberships"
+        className="scroll-section py-20 bg-white"
+        ref={addToRefs}
       >
-        <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">{memberships.basic.name}</h3>
-          <div className="flex items-baseline justify-center gap-1">
-            <span className="text-4xl font-bold text-lime-700">₱{memberships.basic.price}</span>
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Our Memberships
+            </h2>
+            <p className="text-xl text-gray-600">
+              Choose the plan that works best for you
+            </p>
           </div>
-          <p className="text-gray-600 mt-2">Consumable Amount: ₱{memberships.basic.consumable}</p>
-        </div>
-        
-        <div className="space-y-4 mb-6">
-          {memberships.basic.features.map((feature, index) => (
-            <div key={index} className="flex items-center">
-              <div className="w-6 h-6 bg-lime-100 rounded-full flex items-center justify-center mr-3">
-                <span className="text-lime-700 text-sm">✓</span>
-              </div>
-              <span className="text-gray-700">{feature}</span>
-            </div>
-          ))}
-        </div>
-        
-      </div>
 
-      {/* Pro Membership */}
-      <div
-        className="scroll-section bg-gradient-to-b from-green-50 to-white p-8 rounded-2xl shadow-2xl border border-green-300 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 scale-105 relative"
-        style={{ animationDelay: "200ms" }}
-      >
-        <div className="absolute top-0 right-0 bg-green-600 text-white px-4 py-1 rounded-bl-lg rounded-tr-2xl text-sm font-medium">
-          MOST POPULAR
-        </div>
-        
-        <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">{memberships.pro.name}</h3>
-          <div className="flex items-baseline justify-center gap-1">
-            <span className="text-4xl font-bold text-green-700">₱{memberships.pro.price}</span>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Basic Membership */}
+            <div
+              className="scroll-section bg-gradient-to-b from-lime-50 to-white p-8 rounded-2xl shadow-lg border border-lime-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              style={{ animationDelay: "0ms" }}
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  {memberships.basic.name}
+                </h3>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-4xl font-bold text-lime-700">
+                    ₱{memberships.basic.price}
+                  </span>
+                </div>
+                <p className="text-gray-600 mt-2">
+                  Consumable Amount: ₱{memberships.basic.consumable}
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                {memberships.basic.features.map((feature, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="w-6 h-6 bg-lime-100 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-lime-700 text-sm">✓</span>
+                    </div>
+                    <span className="text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Pro Membership */}
+            <div
+              className="scroll-section bg-gradient-to-b from-green-50 to-white p-8 rounded-2xl shadow-2xl border border-green-300 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 scale-105 relative"
+              style={{ animationDelay: "200ms" }}
+            >
+              <div className="absolute top-0 right-0 bg-green-600 text-white px-4 py-1 rounded-bl-lg rounded-tr-2xl text-sm font-medium">
+                MOST POPULAR
+              </div>
+
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  {memberships.pro.name}
+                </h3>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-4xl font-bold text-green-700">
+                    ₱{memberships.pro.price}
+                  </span>
+                </div>
+                <p className="text-gray-600 mt-2">
+                  Consumable Amount: ₱{memberships.pro.consumable}
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                {memberships.pro.features.map((feature, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-green-700 text-sm">✓</span>
+                    </div>
+                    <span className="text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Promo Membership */}
+            <div
+              className="scroll-section bg-gradient-to-b from-yellow-50 to-white p-8 rounded-2xl shadow-lg border border-yellow-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              style={{ animationDelay: "400ms" }}
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  {memberships.promo.name}
+                </h3>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-4xl font-bold text-yellow-600">
+                    {memberships.promo.price}
+                  </span>
+                </div>
+                <p className="text-gray-600 mt-2">
+                  {memberships.promo.consumable} pricing & benefits
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                {memberships.promo.features.map((feature, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-yellow-600 text-sm">✓</span>
+                    </div>
+                    <span className="text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <p className="text-gray-600 mt-2">Consumable Amount: ₱{memberships.pro.consumable}</p>
-        </div>
-        
-        <div className="space-y-4 mb-6">
-          {memberships.pro.features.map((feature, index) => (
-            <div key={index} className="flex items-center">
-              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                <span className="text-green-700 text-sm">✓</span>
-              </div>
-              <span className="text-gray-700">{feature}</span>
-            </div>
-          ))}
-        </div>
-        
-      </div>
 
-      {/* Promo Membership */}
-      <div
-        className="scroll-section bg-gradient-to-b from-yellow-50 to-white p-8 rounded-2xl shadow-lg border border-yellow-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-        style={{ animationDelay: "400ms" }}
-      >
-        <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">{memberships.promo.name}</h3>
-          <div className="flex items-baseline justify-center gap-1">
-            <span className="text-4xl font-bold text-yellow-600">{memberships.promo.price}</span>
+          <div className="text-center mt-8">
+            <p className="text-gray-600">
+              All memberships include personalized consultations and flexible
+              scheduling
+            </p>
           </div>
-          <p className="text-gray-600 mt-2">{memberships.promo.consumable} pricing & benefits</p>
         </div>
-        
-        <div className="space-y-4 mb-6">
-          {memberships.promo.features.map((feature, index) => (
-            <div key={index} className="flex items-center">
-              <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-                <span className="text-yellow-600 text-sm">✓</span>
-              </div>
-              <span className="text-gray-700">{feature}</span>
-            </div>
-          ))}
-        </div>
-        
-      </div>
-    </div>
-
-    <div className="text-center mt-8">
-      <p className="text-gray-600">
-        All memberships include personalized consultations and flexible scheduling
-      </p>
-    </div>
-  </div>
-</section>
-
+      </section>
 
       {/* CTA Section */}
       <section
@@ -980,15 +1011,14 @@ export default function Home() {
                     About
                   </a>
                 </li>
-               <li>
-  <a
-    href="#memberships"
-    className="hover:text-lime-600 transition-colors"
-  >
-    Memberships
-  </a>
-</li>
-
+                <li>
+                  <a
+                    href="#memberships"
+                    className="hover:text-lime-600 transition-colors"
+                  >
+                    Memberships
+                  </a>
+                </li>
               </ul>
             </div>
 

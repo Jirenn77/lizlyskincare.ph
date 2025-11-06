@@ -1631,6 +1631,12 @@ const checkAuth = async () => {
     });
   };
 
+  const handleImageError = (e, imageKey) => {
+  console.error(`Failed to load image: ${imageKey}`);
+  e.target.style.display = 'none';
+  // You could set a fallback image here
+};
+
   const handleImageUpload = async (imageKey, file) => {
   console.log('Uploading image:', imageKey, file);
   
@@ -1645,6 +1651,7 @@ const checkAuth = async () => {
       method: "POST",
       headers: { 
         'Authorization': token
+        // Remove Content-Type header for FormData - let browser set it
       },
       body: formData
     });
@@ -1653,10 +1660,8 @@ const checkAuth = async () => {
     console.log('Upload response:', data);
     
     if (data.success) {
-      // Ensure we're using the full URL if needed
-      const imageUrl = data.data.url.startsWith('http') 
-        ? data.data.url 
-        : `${API_BASE}/${data.data.url}`;
+      // Use the URL returned by the API directly
+      const imageUrl = data.data.url;
       
       setImages(prev => ({
         ...prev,
