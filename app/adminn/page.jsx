@@ -1647,27 +1647,48 @@ const checkAuth = async () => {
   try {
     const token = localStorage.getItem("adminToken");
     
+    console.log('Sending upload request to:', `${API_BASE}/images.php?action=uploadImage`);
+    
     const response = await fetch(`${API_BASE}/images.php?action=uploadImage`, {
       method: "POST",
       headers: { 
         'Authorization': token
-        // Remove Content-Type header for FormData - let browser set it
+        // NOTE: Don't set Content-Type for FormData - let browser set it automatically
       },
       body: formData
     });
 
-    const data = await response.json();
-    console.log('Upload response:', data);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Failed to parse JSON:', e);
+      showMessage("Server returned invalid response", 'error');
+      return;
+    }
+    
+    console.log('Parsed response:', data);
     
     if (data.success) {
-      // Use the URL returned by the API directly
-      const imageUrl = data.data.url;
+      // Construct the full URL for the image
+      const imageUrl = `${API_BASE}/images.php?action=getImage&key=${imageKey}`;
       
       setImages(prev => ({
         ...prev,
         [imageKey]: imageUrl
       }));
       showMessage('Image uploaded successfully!');
+      
+      // Force reload the image by adding timestamp to avoid cache
+      setTimeout(() => {
+        setImages(prev => ({
+          ...prev,
+          [imageKey]: `${imageUrl}&t=${Date.now()}`
+        }));
+      }, 100);
     } else {
       showMessage(data.error || "Upload failed", 'error');
     }

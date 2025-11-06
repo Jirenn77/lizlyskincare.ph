@@ -214,11 +214,14 @@ export default function Home() {
           const loadedImages = {};
           Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
             if (imageInfo && imageInfo.url) {
-              // Use the URL provided by the API directly
-              loadedImages[key] = imageInfo.url;
+              // Add cache busting parameter
+              loadedImages[key] = `${imageInfo.url}&t=${Date.now()}`;
             }
           });
           setImages(loadedImages);
+          console.log("Loaded images:", loadedImages);
+        } else {
+          console.error("Failed to load images:", imagesData);
         }
 
         // Load content
@@ -587,13 +590,27 @@ export default function Home() {
               }`}
             >
               <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
-                <img
-                  src={images.heroImage || "/placeholder-hero.jpg"}
-                  alt="Lizly Skin Care Clinic"
-                  className="relative rounded-2xl h-96 w-full object-cover shadow-xl"
-                />
-              </div>
+  <div className="absolute -inset-4 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
+  {images.heroImage ? (
+    <img
+      src={images.heroImage}
+      alt="Lizly Skin Care Clinic"
+      className="relative rounded-2xl h-96 w-full object-cover shadow-xl"
+      onError={(e) => {
+        console.error('Failed to load hero image');
+        e.target.style.display = 'none';
+      }}
+    />
+  ) : (
+    <div className="relative rounded-2xl h-96 w-full bg-gradient-to-br from-lime-200 to-green-200 flex items-center justify-center shadow-xl">
+      <div className="text-center text-lime-700">
+        <Sparkles size={48} className="mx-auto mb-4" />
+        <p className="text-xl font-semibold">Lizly Skin Care</p>
+        <p className="text-sm mt-2">Professional Skin Treatments</p>
+      </div>
+    </div>
+  )}
+</div>
             </div>
           </div>
         </div>
