@@ -1327,7 +1327,7 @@ const deletePromo = async (promoId) => {
 const fetchBundles = async () => {
   try {
     const token = localStorage.getItem("adminToken");
-    const response = await fetch(`${API_BASE}/bundles.php?action=getAll`, {
+    const response = await fetch(`${API_BASE}/bundles2.php?action=getAll`, {
       headers: {
         'Authorization': token
       }
@@ -1788,14 +1788,6 @@ const checkAuth = async () => {
               {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
-
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 text-center">
-              Default credentials:<br />
-              Username: <strong>admin</strong><br />
-              Password: <strong>admin123</strong>
-            </p>
-          </div>
         </div>
       </div>
     );
