@@ -3530,69 +3530,6 @@ const checkAuth = async () => {
   </div>
 )}
 
-    {/* Service Images */}
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">Service Images</h2>
-      <p className="text-gray-600 mb-6">Upload images for up to 10 popular services</p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {Array.from({ length: 10 }, (_, index) => {
-          const key = `service${index + 1}Image`;
-          return (
-            <div key={key} className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-md font-medium mb-3 text-gray-800">
-                Service {index + 1} Image
-                {content.services?.[index]?.title && (
-                  <span className="text-sm text-gray-500 block mt-1">
-                    {content.services[index].title}
-                  </span>
-                )}
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Upload Image
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        handleImageUpload(key, file);
-                      }
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Preview
-                  </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 h-32 flex items-center justify-center">
-                    {images[key] ? (
-                      <img
-                        src={images[key]}
-                        alt={`Service ${index + 1}`}
-                        className="max-h-24 max-w-full object-cover rounded"
-                      />
-                    ) : (
-                      <div className="text-gray-400 text-center">
-                        <Image size={24} className="mx-auto mb-1" />
-                        <p className="text-xs">No image</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  </div>
-)}
-
         {/* Settings Tab */}
         {activeTab === "settings" && (
           <div className="bg-white rounded-lg shadow-sm p-6">
