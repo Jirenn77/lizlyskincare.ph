@@ -32,6 +32,7 @@ export default function Home() {
     service10Image: null,
   });
   const [content, setContent] = useState(null);
+  const [imageRefreshKey, setImageRefreshKey] = useState(0);
   const [currentServicePage, setCurrentServicePage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
@@ -58,6 +59,38 @@ export default function Home() {
     features: ["Seasonal offers", "Limited time deals", "Bundle packages", "Exclusive treatments"]
   }
 });
+
+const refreshImages = async () => {
+  try {
+    const imagesResponse = await fetch(
+      `${API_BASE}/images.php?action=getAll&t=${new Date().getTime()}`
+    );
+    const imagesData = await imagesResponse.json();
+    
+    if (imagesData.success && imagesData.data && imagesData.data.images) {
+      const loadedImages = {};
+      Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
+        if (imageInfo && imageInfo.url) {
+          let imageUrl = imageInfo.url;
+          if (!imageUrl.startsWith("http")) {
+            imageUrl = `${API_BASE}/${imageUrl.replace(/^\//, '')}`;
+          }
+          const timestamp = new Date().getTime();
+          loadedImages[key] = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}t=${timestamp}`;
+        }
+      });
+      setImages(loadedImages);
+      setImageRefreshKey(prev => prev + 1); // Force re-render
+    }
+  } catch (error) {
+    console.error("Failed to refresh images:", error);
+  }
+};
+
+// Update your useEffect dependency to include imageRefreshKey
+useEffect(() => {
+  loadData();
+}, [imageRefreshKey]);
 
   const handleServiceScroll = (direction) => {
     const scrollContainer = document.getElementById("services-scroll");
@@ -187,9 +220,9 @@ export default function Home() {
     try {
       setLoading(true);
 
-      // Load images
+      // Load images with cache busting
       const imagesResponse = await fetch(
-        `${API_BASE}/images.php?action=getAll`
+        `${API_BASE}/images.php?action=getAll&t=${new Date().getTime()}`
       );
       const imagesData = await imagesResponse.json();
       console.log("Images API response:", imagesData);
@@ -198,11 +231,20 @@ export default function Home() {
         const loadedImages = {};
         Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
           if (imageInfo && imageInfo.url) {
-            loadedImages[key] = imageInfo.url.startsWith("http")
-              ? imageInfo.url
-              : `${API_BASE}/${imageInfo.url}`;
+            // Use the URL provided by the API directly
+            let imageUrl = imageInfo.url;
+            
+            // If it's a relative URL, make it absolute
+            if (!imageUrl.startsWith("http")) {
+              imageUrl = `${API_BASE}/${imageUrl.replace(/^\//, '')}`;
+            }
+            
+            // Add cache busting parameter
+            const timestamp = new Date().getTime();
+            loadedImages[key] = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}t=${timestamp}`;
           }
         });
+        console.log("Loaded images:", loadedImages);
         setImages(loadedImages);
       }
 
@@ -625,80 +667,102 @@ export default function Home() {
             )}
 
             {/* Scrollable Services Container - Limited to 10 services */}
+<div
+  id="services-scroll"
+  className="flex gap-6 overflow-x-hidden pb-6"
+  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+>
+  {currentContent.services?.slice(0, 10).map((service, index) => {
+    const imageKey = `service${index + 1}Image`;
+    const imageUrl = images[imageKey];
+    
+    return (
+      <div
+        key={index}
+        className="scroll-section w-[calc(25%-18px)] min-w-[280px] bg-lime-50 p-6 rounded-2xl shadow-lg border border-lime-500 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 flex-shrink-0"
+        style={{ animationDelay: `${index * 200}ms` }}
+      >
+        {/* Service Image */}
+        <div className="relative mb-4">
+          <div className="absolute -inset-2 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
+          <div className="relative rounded-xl h-40 w-full bg-gradient-to-br from-lime-100 to-green-100 flex items-center justify-center shadow-lg border border-lime-200 overflow-hidden">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={service.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error(`Failed to load image for ${imageKey}:`, imageUrl);
+                  e.target.style.display = "none";
+                  // Show fallback content
+                  const fallback = e.target.parentElement.querySelector('.image-fallback');
+                  if (fallback) {
+                    fallback.classList.remove('opacity-0');
+                  }
+                }}
+                onLoad={(e) => {
+                  console.log(`Successfully loaded image for ${imageKey}`);
+                  // Hide fallback when image loads successfully
+                  const fallback = e.target.parentElement.querySelector('.image-fallback');
+                  if (fallback) {
+                    fallback.classList.add('opacity-0');
+                  }
+                }}
+              />
+            ) : (
+              console.log(`No image URL found for ${imageKey}`)
+            )}
+
+            {/* Fallback content - always present but hidden when image is shown */}
             <div
-              id="services-scroll"
-              className="flex gap-6 overflow-x-hidden pb-6"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              className={`image-fallback absolute inset-0 flex items-center justify-center p-4 transition-opacity duration-300 ${
+                imageUrl ? 'opacity-0' : 'opacity-100'
+              }`}
             >
-              {currentContent.services?.slice(0, 10).map((service, index) => (
-                <div
-                  key={index}
-                  className="scroll-section w-[calc(25%-18px)] min-w-[280px] bg-lime-50 p-6 rounded-2xl shadow-lg border border-lime-500 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 flex-shrink-0"
-                  style={{ animationDelay: `${index * 200}ms` }}
-                >
-                  {/* Service Image */}
-                  <div className="relative mb-4">
-                    <div className="absolute -inset-2 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
-                    <div className="relative rounded-xl h-40 w-full bg-gradient-to-br from-lime-100 to-green-100 flex items-center justify-center shadow-lg border border-lime-200 overflow-hidden">
-                      {images[`service${index + 1}Image`] ? (
-                        <img
-                          src={images[`service${index + 1}Image`]}
-                          alt={service.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                          }}
-                        />
-                      ) : null}
-
-                      {/* Fallback content that shows when no image or image fails */}
-                      <div
-                        className={`absolute inset-0 flex items-center justify-center p-4 ${
-                          images[`service${index + 1}Image`]
-                            ? "bg-white/80 opacity-0 hover:opacity-100 transition-opacity duration-300"
-                            : ""
-                        }`}
-                      >
-                        <div className="text-center">
-                          <div className="w-10 h-10 bg-lime-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <Sparkles className="text-lime-700" size={20} />
-                          </div>
-                          <span className="text-lime-700 font-semibold text-sm line-clamp-2">
-                            {service.title}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <h3 className="text-xl font-semibold mb-3 text-lime-600 line-clamp-2">
-                    {service.title}
-                  </h3>
-                  <p className="text-gray-600 mb-3 text-sm line-clamp-2">
-                    {service.description}
-                  </p>
-                  <ul className="text-gray-700 space-y-1 mb-4 text-sm">
-                    {service.features
-                      ?.slice(0, 3)
-                      .map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center">
-                          <div className="w-1.5 h-1.5 bg-lime-700 rounded-full mr-2 flex-shrink-0"></div>
-                          <span className="line-clamp-1">{feature}</span>
-                        </li>
-                      ))}
-                    {service.features?.length > 3 && (
-                      <li className="flex items-center text-lime-600 font-medium text-xs">
-                        <div className="w-1.5 h-1.5 bg-lime-700 rounded-full mr-2"></div>
-                        +{service.features.length - 3} more features
-                      </li>
-                    )}
-                  </ul>
-                  <button className="bg-gradient-to-r from-lime-700 to-green-700 bg-clip-text text-transparent font-semibold hover:from-lime-600 hover:to-green-600 transition-all duration-300 text-sm">
-                    Learn More →
-                  </button>
+              <div className="text-center">
+                <div className="w-10 h-10 bg-lime-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Sparkles className="text-lime-700" size={20} />
                 </div>
-              ))}
+                <span className="text-lime-700 font-semibold text-sm line-clamp-2">
+                  {service.title}
+                </span>
+                {!imageUrl && (
+                  <p className="text-xs text-gray-500 mt-1">No image uploaded</p>
+                )}
+              </div>
             </div>
+          </div>
+        </div>
+
+        <h3 className="text-xl font-semibold mb-3 text-lime-600 line-clamp-2">
+          {service.title}
+        </h3>
+        <p className="text-gray-600 mb-3 text-sm line-clamp-2">
+          {service.description}
+        </p>
+        <ul className="text-gray-700 space-y-1 mb-4 text-sm">
+          {service.features
+            ?.slice(0, 3)
+            .map((feature, featureIndex) => (
+              <li key={featureIndex} className="flex items-center">
+                <div className="w-1.5 h-1.5 bg-lime-700 rounded-full mr-2 flex-shrink-0"></div>
+                <span className="line-clamp-1">{feature}</span>
+              </li>
+            ))}
+          {service.features?.length > 3 && (
+            <li className="flex items-center text-lime-600 font-medium text-xs">
+              <div className="w-1.5 h-1.5 bg-lime-700 rounded-full mr-2"></div>
+              +{service.features.length - 3} more features
+            </li>
+          )}
+        </ul>
+        <button className="bg-gradient-to-r from-lime-700 to-green-700 bg-clip-text text-transparent font-semibold hover:from-lime-600 hover:to-green-600 transition-all duration-300 text-sm">
+          Learn More →
+        </button>
+      </div>
+    );
+  })}
+</div>
 
             {/* Page Indicators */}
             {currentContent.services?.length > 4 && (
