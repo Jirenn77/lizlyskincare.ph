@@ -1555,20 +1555,23 @@ const checkAuth = async () => {
     }
   };
 
- const loadImages = async () => {
+  const loadImages = async () => {
   try {
-    const imagesResponse = await fetch(`${API_BASE}/api/images.php?action=getAll`);
-    const imagesData = await imagesResponse.json();
+    const response = await fetch(`${API_BASE}/images.php?action=getAll`);
+    const data = await response.json();
     
-    if (imagesData.success && imagesData.data && imagesData.data.images) {
-      const loadedImages = {};
-      Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
-        if (imageInfo && imageInfo.url) {
-          // Use the correct URL format
-          loadedImages[key] = `${API_BASE}/api/images.php?action=getImage&key=${key}`;
-        }
-      });
-      setImages(loadedImages);
+    if (data.success && data.data.images) {
+      const imageUrls = {};
+      for (const [key, imageInfo] of Object.entries(data.data.images)) {
+        // Add cache busting to prevent cached images
+        const timestamp = new Date().getTime();
+        const imageUrl = `${API_BASE}/images.php?action=getImage&key=${key}&t=${timestamp}`;
+        imageUrls[key] = imageUrl;
+      }
+      setImages(imageUrls);
+      console.log('Loaded images:', imageUrls);
+    } else {
+      console.log('No images found or failed to load');
     }
   } catch (error) {
     console.error("Failed to load images:", error);
@@ -1637,6 +1640,12 @@ const checkAuth = async () => {
   const handleImageUpload = async (imageKey, file) => {
   console.log('Uploading image:', imageKey, file);
   
+  // Validate file size (5MB limit)
+  if (file.size > 5 * 1024 * 1024) {
+    showMessage("File size must be less than 5MB", 'error');
+    return;
+  }
+
   const formData = new FormData();
   formData.append("key", imageKey);
   formData.append("image", file);
@@ -1644,26 +1653,31 @@ const checkAuth = async () => {
   try {
     const token = localStorage.getItem("adminToken");
     
-    const response = await fetch(`${API_BASE}/api/images.php?action=uploadImage`, {
-  method: "POST",
-  headers: { 
-    'Authorization': token
-  },
-  body: formData
-});
+    console.log('Sending upload request...');
+    const response = await fetch(`${API_BASE}/images.php?action=uploadImage`, {
+      method: "POST",
+      headers: { 
+        'Authorization': token
+        // Don't set Content-Type - let browser set it with boundary
+      },
+      body: formData
+    });
 
     const data = await response.json();
     console.log('Upload response:', data);
     
     if (data.success) {
-      // Use the URL provided by the backend
+      // Use the URL provided by the backend with cache busting
       const imageUrl = data.data.url || `${API_BASE}/images.php?action=getImage&key=${imageKey}`;
+      const timestamp = new Date().getTime();
+      const imageUrlWithTimestamp = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}t=${timestamp}`;
       
       setImages(prev => ({
         ...prev,
-        [imageKey]: imageUrl
+        [imageKey]: imageUrlWithTimestamp
       }));
-      showMessage('Image uploaded successfully!');
+      
+      showMessage(`Image for ${imageKey} uploaded successfully!`);
       
       // Force reload images for the frontend
       await loadImages();
@@ -3256,27 +3270,36 @@ const checkAuth = async () => {
                   </div>
 
                   {/* Service Image Status */}
-                  <div className="border-t border-gray-200 pt-4 mt-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Service Image
-                        </label>
-                        <p className="text-xs text-gray-500">
-                          {images[`service${globalIndex + 1}Image`] 
-                            ? "✓ Image uploaded" 
-                            : "No image uploaded - will use placeholder"}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("images")}
-                        className="text-lime-600 hover:text-lime-800 text-sm font-medium"
-                      >
-                        {images[`service${globalIndex + 1}Image`] ? "Change Image" : "Upload Image"}
-                      </button>
-                    </div>
-                  </div>
+<div className="border-t border-gray-200 pt-4 mt-2">
+  <div className="flex items-center justify-between">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Service Image
+      </label>
+      <p className={`text-xs ${images[`service${globalIndex + 1}Image`] ? 'text-green-600' : 'text-yellow-600'}`}>
+        {images[`service${globalIndex + 1}Image`] 
+          ? "✓ Image uploaded successfully" 
+          : "No image uploaded - will use placeholder"}
+      </p>
+    </div>
+    <button
+      type="button"
+      onClick={() => {
+        setActiveTab("images");
+        // Optional: scroll to the specific service image section
+        setTimeout(() => {
+          const element = document.getElementById(`service${globalIndex + 1}Image`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      }}
+      className="text-lime-600 hover:text-lime-800 text-sm font-medium"
+    >
+      {images[`service${globalIndex + 1}Image`] ? "Change Image" : "Upload Image"}
+    </button>
+  </div>
+</div>
                 </div>
               </div>
             );
@@ -3400,30 +3423,112 @@ const checkAuth = async () => {
             </p>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2 text-gray-800">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Preview
             </label>
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 h-48 flex items-center justify-center">
-  {images[key] ? (
-    <img
-      src={`${API_BASE}/api/images.php?action=getImage&key=${key}`}
-      alt="Preview"
-      className="max-h-40 max-w-full object-contain"
-      onError={(e) => {
-        e.target.style.display = 'none';
-      }}
-    />
-  ) : (
-    <div className="text-gray-400 text-center">
-      <Image size={32} className="mx-auto mb-2" />
-      <p>No image uploaded</p>
-    </div>
-  )}
-</div>
+              {images[key] ? (
+                <img
+                  src={`${images[key]}?t=${new Date().getTime()}`} // Add cache busting
+                  alt="Preview"
+                  className="max-h-40 max-w-full object-contain"
+                  onError={(e) => {
+                    console.error(`Failed to load image for ${key}`);
+                    e.target.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="text-gray-400 text-center">
+                  <Image size={32} className="mx-auto mb-2" />
+                  <p>No image uploaded</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     ))}
+
+    {/* Service Images */}
+    <div className="bg-white rounded-lg shadow-sm p-6">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">Service Images</h2>
+      <p className="text-gray-600 mb-6">Upload images for up to 10 popular services</p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {Array.from({ length: 10 }, (_, index) => {
+          const key = `service${index + 1}Image`;
+          const serviceTitle = content.services?.[index]?.title || `Service ${index + 1}`;
+          
+          return (
+            <div key={key} className="border border-gray-200 rounded-lg p-4">
+              <h3 className="text-md font-medium mb-3 text-gray-800">
+                {serviceTitle}
+                <span className="text-sm text-gray-500 block mt-1">
+                  Image Key: {key}
+                </span>
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Image
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        console.log(`Uploading ${key} with file:`, file.name);
+                        handleImageUpload(key, file);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-gray-800 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preview
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 h-32 flex items-center justify-center">
+                    {images[key] ? (
+                      <img
+                        src={`${images[key]}?t=${new Date().getTime()}`} // Add cache busting
+                        alt={serviceTitle}
+                        className="max-h-24 max-w-full object-cover rounded"
+                        onError={(e) => {
+                          console.error(`Failed to load image for ${key}`);
+                          e.target.style.display = 'none';
+                          // Show fallback
+                          e.target.nextSibling.style.display = 'block';
+                        }}
+                      />
+                    ) : null}
+                    
+                    {!images[key] && (
+                      <div className="text-gray-400 text-center">
+                        <Image size={24} className="mx-auto mb-1" />
+                        <p className="text-xs">No image uploaded</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Image Status */}
+                <div className="text-xs text-gray-500">
+                  {images[key] ? (
+                    <span className="text-green-600">✓ Image uploaded successfully</span>
+                  ) : (
+                    <span className="text-yellow-600">No image - will use placeholder</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+)}
 
     {/* Service Images */}
     <div className="bg-white rounded-lg shadow-sm p-6">
