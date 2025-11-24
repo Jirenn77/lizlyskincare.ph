@@ -32,7 +32,6 @@ export default function Home() {
     service10Image: null,
   });
   const [content, setContent] = useState(null);
-  const [imageRefreshKey, setImageRefreshKey] = useState(0);
   const [currentServicePage, setCurrentServicePage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
@@ -59,38 +58,6 @@ export default function Home() {
     features: ["Seasonal offers", "Limited time deals", "Bundle packages", "Exclusive treatments"]
   }
 });
-
-const refreshImages = async () => {
-  try {
-    const imagesResponse = await fetch(
-      `${API_BASE}/images.php?action=getAll&t=${new Date().getTime()}`
-    );
-    const imagesData = await imagesResponse.json();
-    
-    if (imagesData.success && imagesData.data && imagesData.data.images) {
-      const loadedImages = {};
-      Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
-        if (imageInfo && imageInfo.url) {
-          let imageUrl = imageInfo.url;
-          if (!imageUrl.startsWith("http")) {
-            imageUrl = `${API_BASE}/${imageUrl.replace(/^\//, '')}`;
-          }
-          const timestamp = new Date().getTime();
-          loadedImages[key] = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}t=${timestamp}`;
-        }
-      });
-      setImages(loadedImages);
-      setImageRefreshKey(prev => prev + 1); // Force re-render
-    }
-  } catch (error) {
-    console.error("Failed to refresh images:", error);
-  }
-};
-
-// Update your useEffect dependency to include imageRefreshKey
-useEffect(() => {
-  loadData();
-}, [imageRefreshKey]);
 
   const handleServiceScroll = (direction) => {
     const scrollContainer = document.getElementById("services-scroll");
