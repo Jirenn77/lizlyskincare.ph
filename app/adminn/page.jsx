@@ -1555,22 +1555,25 @@ const checkAuth = async () => {
     }
   };
 
-  const loadImages = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/images.php?action=getAll`);
-      const data = await response.json();
-      
-      if (data.success && data.data.images) {
-        const imageUrls = {};
-        for (const [key, imageInfo] of Object.entries(data.data.images)) {
-          imageUrls[key] = imageInfo.url;
+ const loadImages = async () => {
+  try {
+    const imagesResponse = await fetch(`${API_BASE}/api/images.php?action=getAll`);
+    const imagesData = await imagesResponse.json();
+    
+    if (imagesData.success && imagesData.data && imagesData.data.images) {
+      const loadedImages = {};
+      Object.entries(imagesData.data.images).forEach(([key, imageInfo]) => {
+        if (imageInfo && imageInfo.url) {
+          // Use the correct URL format
+          loadedImages[key] = `${API_BASE}/api/images.php?action=getImage&key=${key}`;
         }
-        setImages(imageUrls);
-      }
-    } catch (error) {
-      console.error("Failed to load images:", error);
+      });
+      setImages(loadedImages);
     }
-  };
+  } catch (error) {
+    console.error("Failed to load images:", error);
+  }
+};
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -1625,7 +1628,7 @@ const checkAuth = async () => {
             [field]: value
           }
         };
-      } else {
+      } else {  
         return { ...prev, [section]: value };
       }
     });
@@ -1641,28 +1644,29 @@ const checkAuth = async () => {
   try {
     const token = localStorage.getItem("adminToken");
     
-    const response = await fetch(`${API_BASE}/images.php?action=uploadImage`, {
-      method: "POST",
-      headers: { 
-        'Authorization': token
-      },
-      body: formData
-    });
+    const response = await fetch(`${API_BASE}/api/images.php?action=uploadImage`, {
+  method: "POST",
+  headers: { 
+    'Authorization': token
+  },
+  body: formData
+});
 
     const data = await response.json();
     console.log('Upload response:', data);
     
     if (data.success) {
-      // Ensure we're using the full URL if needed
-      const imageUrl = data.data.url.startsWith('http') 
-        ? data.data.url 
-        : `${API_BASE}/${data.data.url}`;
+      // Use the URL provided by the backend
+      const imageUrl = data.data.url || `${API_BASE}/images.php?action=getImage&key=${imageKey}`;
       
       setImages(prev => ({
         ...prev,
         [imageKey]: imageUrl
       }));
       showMessage('Image uploaded successfully!');
+      
+      // Force reload images for the frontend
+      await loadImages();
     } else {
       showMessage(data.error || "Upload failed", 'error');
     }
@@ -3400,19 +3404,22 @@ const checkAuth = async () => {
               Preview
             </label>
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 h-48 flex items-center justify-center">
-              {images[key] ? (
-                <img
-                  src={images[key]}
-                  alt="Preview"
-                  className="max-h-40 max-w-full object-contain"
-                />
-              ) : (
-                <div className="text-gray-400 text-center">
-                  <Image size={32} className="mx-auto mb-2" />
-                  <p>No image uploaded</p>
-                </div>
-              )}
-            </div>
+  {images[key] ? (
+    <img
+      src={`${API_BASE}/api/images.php?action=getImage&key=${key}`}
+      alt="Preview"
+      className="max-h-40 max-w-full object-contain"
+      onError={(e) => {
+        e.target.style.display = 'none';
+      }}
+    />
+  ) : (
+    <div className="text-gray-400 text-center">
+      <Image size={32} className="mx-auto mb-2" />
+      <p>No image uploaded</p>
+    </div>
+  )}
+</div>
           </div>
         </div>
       </div>
