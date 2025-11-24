@@ -641,17 +641,19 @@ export default function Home() {
                     <div className="absolute -inset-2 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
                     <div className="relative rounded-xl h-40 w-full bg-gradient-to-br from-lime-100 to-green-100 flex items-center justify-center shadow-lg border border-lime-200 overflow-hidden">
                       {images[`service${index + 1}Image`] ? (
-<img
-  src={images[`service${index + 1}Image`] || `/api/images.php?action=getImage&key=service${index + 1}Image`}
-  alt={service.title}
-  className="w-full h-full object-cover"
-  onError={(e) => {
-    e.target.style.display = "none";
-    // Show fallback content
-    e.target.nextElementSibling?.style?.display = 'flex';
-  }}
-/>
-                      ) : null}
+  <img
+    src={images[`service${index + 1}Image`]}
+    alt={service.title}
+    className="w-full h-full object-cover"
+    onError={(e) => {
+      console.error('Image failed to load:', e.target.src);
+      e.target.style.display = "none";
+      // Ensure fallback content is visible
+      const fallback = e.target.parentElement.querySelector('.absolute');
+      if (fallback) fallback.style.display = 'flex';
+    }}
+  />
+) : null}
 
                       {/* Fallback content that shows when no image or image fails */}
                       <div
