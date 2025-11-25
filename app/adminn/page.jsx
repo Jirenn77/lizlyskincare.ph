@@ -1557,21 +1557,32 @@ const checkAuth = async () => {
 
   const loadImages = async () => {
   try {
-    const response = await fetch(`${API_BASE}/images.php?action=getAll`);
+    const timestamp = new Date().getTime();
+    const response = await fetch(`${API_BASE}/images.php?action=getAll&t=${timestamp}`);
     const data = await response.json();
     
-    if (data.success && data.data.images) {
-      const imageUrls = {};
-      for (const [key, imageInfo] of Object.entries(data.data.images)) {
-        // Add cache busting to prevent cached images
-        const timestamp = new Date().getTime();
-        const imageUrl = `${API_BASE}/images.php?action=getImage&key=${key}&t=${timestamp}`;
-        imageUrls[key] = imageUrl;
-      }
-      setImages(imageUrls);
-      console.log('Loaded images:', imageUrls);
+    if (data.success && data.data && data.data.images) {
+      const loadedImages = {};
+      
+      // Process all images including service images
+      Object.entries(data.data.images).forEach(([key, imageInfo]) => {
+        if (imageInfo && imageInfo.url) {
+          let imageUrl = imageInfo.url;
+          
+          // If it's a relative URL, make it absolute
+          if (!imageUrl.startsWith("http")) {
+            imageUrl = `${API_BASE}/${imageUrl.replace(/^\//, '')}`;
+          }
+          
+          // Add cache busting parameter
+          loadedImages[key] = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}t=${timestamp}`;
+        }
+      });
+      
+      console.log("Loaded all images:", loadedImages);
+      setImages(loadedImages);
     } else {
-      console.log('No images found or failed to load');
+      console.log('No images found in response:', data);
     }
   } catch (error) {
     console.error("Failed to load images:", error);
@@ -1640,7 +1651,6 @@ const checkAuth = async () => {
   const handleImageUpload = async (imageKey, file) => {
   console.log('Uploading image:', imageKey, file);
   
-  // Validate file size (5MB limit)
   if (file.size > 5 * 1024 * 1024) {
     showMessage("File size must be less than 5MB", 'error');
     return;
@@ -1653,12 +1663,10 @@ const checkAuth = async () => {
   try {
     const token = localStorage.getItem("adminToken");
     
-    console.log('Sending upload request...');
     const response = await fetch(`${API_BASE}/images.php?action=uploadImage`, {
       method: "POST",
       headers: { 
         'Authorization': token
-        // Don't set Content-Type - let browser set it with boundary
       },
       body: formData
     });
@@ -1667,20 +1675,14 @@ const checkAuth = async () => {
     console.log('Upload response:', data);
     
     if (data.success) {
-      // Use the URL provided by the backend with cache busting
-      const imageUrl = data.data.url || `${API_BASE}/images.php?action=getImage&key=${imageKey}`;
-      const timestamp = new Date().getTime();
-      const imageUrlWithTimestamp = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}t=${timestamp}`;
-      
-      setImages(prev => ({
-        ...prev,
-        [imageKey]: imageUrlWithTimestamp
-      }));
-      
       showMessage(`Image for ${imageKey} uploaded successfully!`);
       
-      // Force reload images for the frontend
-      await loadImages();
+      // Force reload images for the frontend with a small delay
+      setTimeout(async () => {
+        await loadImages();
+        // Also trigger a hard refresh of the main page images
+        window.dispatchEvent(new Event('imagesUpdated'));
+      }, 1000);
     } else {
       showMessage(data.error || "Upload failed", 'error');
     }
@@ -1689,6 +1691,19 @@ const checkAuth = async () => {
     showMessage("Upload error: " + error.message, 'error');
   }
 };
+
+useEffect(() => {
+  const handleImagesUpdated = () => {
+    console.log('Images updated event received, reloading images...');
+    loadImages();
+  };
+
+  window.addEventListener('imagesUpdated', handleImagesUpdated);
+  
+  return () => {
+    window.removeEventListener('imagesUpdated', handleImagesUpdated);
+  };
+}, []);
 
   const saveChanges = async () => {
     const token = localStorage.getItem("adminToken");

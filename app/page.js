@@ -654,31 +654,49 @@ export default function Home() {
           <div className="absolute -inset-2 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
           <div className="relative rounded-xl h-40 w-full bg-gradient-to-br from-lime-100 to-green-100 flex items-center justify-center shadow-lg border border-lime-200 overflow-hidden">
             {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={service.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  console.error(`Failed to load image for ${imageKey}:`, imageUrl);
-                  e.target.style.display = "none";
-                  // Show fallback content
-                  const fallback = e.target.parentElement.querySelector('.image-fallback');
-                  if (fallback) {
-                    fallback.classList.remove('opacity-0');
-                  }
-                }}
-                onLoad={(e) => {
-                  console.log(`Successfully loaded image for ${imageKey}`);
-                  // Hide fallback when image loads successfully
-                  const fallback = e.target.parentElement.querySelector('.image-fallback');
-                  if (fallback) {
-                    fallback.classList.add('opacity-0');
-                  }
-                }}
-              />
-            ) : (
-              console.log(`No image URL found for ${imageKey}`)
-            )}
+  <img
+    src={imageUrl}
+    alt={service.title}
+    className="w-full h-full object-cover"
+    onError={(e) => {
+      console.error(`Failed to load image for ${imageKey}:`, imageUrl);
+      e.target.style.display = "none";
+      const fallback = e.target.parentElement.querySelector('.image-fallback');
+      if (fallback) {
+        fallback.classList.remove('opacity-0');
+      }
+    }}
+    onLoad={(e) => {
+      console.log(`Successfully loaded image for ${imageKey}`);
+      const fallback = e.target.parentElement.querySelector('.image-fallback');
+      if (fallback) {
+        fallback.classList.add('opacity-0');
+      }
+    }}
+  />
+) : (
+  // Add a direct API fallback if state image is not available
+  <img
+    src={`${API_BASE}/images.php?action=getImage&key=${imageKey}&t=${new Date().getTime()}`}
+    alt={service.title}
+    className="w-full h-full object-cover"
+    onError={(e) => {
+      console.error(`Failed to load image from API for ${imageKey}`);
+      e.target.style.display = "none";
+      const fallback = e.target.parentElement.querySelector('.image-fallback');
+      if (fallback) {
+        fallback.classList.remove('opacity-0');
+      }
+    }}
+    onLoad={(e) => {
+      console.log(`Successfully loaded image from API for ${imageKey}`);
+      const fallback = e.target.parentElement.querySelector('.image-fallback');
+      if (fallback) {
+        fallback.classList.add('opacity-0');
+      }
+    }}
+  />
+)}
 
             {/* Fallback content - always present but hidden when image is shown */}
             <div
