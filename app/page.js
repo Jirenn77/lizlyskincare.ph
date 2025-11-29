@@ -38,6 +38,7 @@ export default function Home() {
   const [showContactModal, setShowContactModal] = useState(false);
   const sectionRefs = useRef([]);
   const [servicesDropdown, setServicesDropdown] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
   const [memberships, setMemberships] = useState({
     basic: {
       name: "Basic",
@@ -72,6 +73,63 @@ export default function Home() {
       ],
     },
   });
+
+
+  const [bookingForm, setBookingForm] = useState({
+  name: "",
+  phone: "",
+  email: "",
+  branch: "",
+  service: "",
+  date: "",
+  time: "",
+  message: ""
+});
+
+// Added form data arrays
+const branches = [
+  "CDO Main Branch",
+  "Gingoog City Branch", 
+  "Camp Evangelista Branch",
+  "Patag CDO Branch",
+  "Manolo Fortich Branch"
+];
+
+const services = [
+  "Facial Treatments",
+  "Laser Therapy", 
+  "Skin Consultation",
+  "Acne Solutions",
+  "Anti-Aging Treatments",
+  "Brightening Therapy",
+  "Laser Hair Removal",
+  "Skin Resurfacing"
+];
+
+const timeSlots = [
+  "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", 
+  "11:00 AM", "11:30 AM", "2:00 PM", "2:30 PM",
+  "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM"
+];
+
+
+const handleBookingSubmit = (e) => {
+  e.preventDefault();
+  console.log("Booking submitted:", bookingForm);
+  alert("Appointment booked successfully! We'll contact you to confirm.");
+  setShowBookingModal(false);
+  // Reset form
+  setBookingForm({ name: "", phone: "", email: "", branch: "", service: "", date: "", time: "", message: "" });
+};
+
+// Input change handler
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  setBookingForm(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
 
   const handleServiceScroll = (direction) => {
     const scrollContainer = document.getElementById("services-scroll");
@@ -418,12 +476,9 @@ export default function Home() {
               )}
             </div>
 
-            <button
-              onClick={() => setShowContactModal(true)}
-              className="bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-full hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              Contact Us
-            </button>
+            <button onClick={() => setShowBookingModal(true)}>
+  Book Now
+</button>
           </div>
         </div>
       </nav>
@@ -578,16 +633,12 @@ export default function Home() {
                 {currentContent.hero.subtitle}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={() => setShowContactModal(true)}
-                  className="bg-gradient-to-r from-lime-700 to-green-700 text-white px-8 py-4 rounded-full hover:from-lime-800 hover:to-green-600 transition-all duration-300 text-lg font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center space-x-2"
-                >
-                  <span>Contact Us</span>
-                  <ArrowRight
-                    size={20}
-                    className="group-hover:translate-x-1 transition-transform"
-                  />
-                </button>
+                <button onClick={() => setShowBookingModal(true)}>
+  Book Appointment
+</button>
+<button onClick={() => setShowContactModal(true)}>
+  Contact Us
+</button>
               </div>
             </div>
 
