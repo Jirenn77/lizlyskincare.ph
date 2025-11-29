@@ -665,7 +665,7 @@ const handleBookNowClick = () => {
                   value={bookingForm.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all text-gray-500"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -683,7 +683,7 @@ const handleBookNowClick = () => {
                   value={bookingForm.phone}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all text-gray-500"
                   placeholder="0965 968 9481"
                 />
               </div>
@@ -699,7 +699,7 @@ const handleBookNowClick = () => {
               name="email"
               value={bookingForm.email}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all text-gray-500"
               placeholder="your@email.com"
             />
           </div>
@@ -715,7 +715,7 @@ const handleBookNowClick = () => {
                 value={bookingForm.branch}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all text-gray-500"
               >
                 <option value="">Select a branch</option>
                 {branches.map((branch, index) => (
@@ -735,7 +735,7 @@ const handleBookNowClick = () => {
                 value={bookingForm.service}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all text-gray-500"
               >
                 <option value="">Select a service</option>
                 {services.map((service, index) => (
@@ -761,7 +761,7 @@ const handleBookNowClick = () => {
                   onChange={handleInputChange}
                   required
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all text-gray-500"
                 />
               </div>
             </div>
@@ -777,7 +777,7 @@ const handleBookNowClick = () => {
                   value={bookingForm.time}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all text-gray-500"
                 >
                   <option value="">Select time</option>
                   {timeSlots.map((time, index) => (
@@ -799,7 +799,7 @@ const handleBookNowClick = () => {
               value={bookingForm.message}
               onChange={handleInputChange}
               rows="3"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all text-gray-500"
               placeholder="Any specific concerns or special requests..."
             />
           </div>
