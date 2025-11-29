@@ -496,7 +496,7 @@ const handleBookNowClick = () => {
           console.log("Book Now button clicked");
           setShowBookingModal(true);
         }}
-        className="bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-full hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 z-50 relative"
+        className="bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-full hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 z-50 relative cursor-pointer"
       >
         Book Now
       </button>
@@ -817,13 +817,13 @@ const handleBookNowClick = () => {
             <button
               type="button"
               onClick={() => setShowBookingModal(false)}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-medium"
+              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-medium cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-xl hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+              className="flex-1 bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-xl hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl cursor-pointer"
             >
               Book Appointment
             </button>
@@ -835,60 +835,76 @@ const handleBookNowClick = () => {
 )}
 
       {/* Hero Section */}
-      <section
-        id="home"
-        className="scroll-section pt-20 bg-gradient-to-br from-lime-50 via-lime-100 to-green-50"
+<section
+  id="home"
+  className="scroll-section pt-20 bg-gradient-to-br from-lime-50 via-lime-100 to-green-50"
+>
+  <div className="container mx-auto px-6 py-20">
+    <div className="grid md:grid-cols-2 gap-12 items-center">
+      <div
+        className={`space-y-6 transition-all duration-1000 ${
+          isVisible
+            ? "translate-y-0 opacity-100"
+            : "translate-y-10 opacity-0"
+        }`}
       >
-        <div className="container mx-auto px-6 py-20">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div
-              className={`space-y-6 transition-all duration-1000 ${
-                isVisible
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-10 opacity-0"
-              }`}
-            >
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                {currentContent.hero.title || "Radiant Skin"}{" "}
-                <span className="bg-gradient-to-r from-lime-700 to-green-700 bg-clip-text text-transparent">
-                  Starts Here
-                </span>
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                {currentContent.hero.subtitle}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button onClick={() => setShowBookingModal(true)}>
-  Book Appointment
-</button>
-<button onClick={() => setShowContactModal(true)}>
-  Contact Us
-</button>
-              </div>
-            </div>
-
-            <div
-              className={`relative transition-all duration-1000 delay-300 ${
-                isVisible
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-10 opacity-0"
-              }`}
-            >
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
-                <img
-                  src={`${API_BASE}/images.php?action=getImage&key=heroImage`}
-                  alt="Lizly Skin Care Clinic"
-                  className="relative rounded-2xl h-96 w-full object-cover shadow-xl"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          {currentContent.hero.title || "Radiant Skin"}{" "}
+          <span className="bg-gradient-to-r from-lime-700 to-green-700 bg-clip-text text-transparent">
+            Starts Here
+          </span>
+        </h1>
+        <p className="text-xl text-gray-600 mb-8">
+          {currentContent.hero.subtitle}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button
+            onClick={() => {
+              console.log("Book Appointment clicked");
+              setShowBookingModal(true);
+            }}
+            className="bg-gradient-to-r from-lime-700 to-green-700 text-white px-8 py-4 rounded-full hover:from-lime-800 hover:to-green-600 transition-all duration-300 text-lg font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center space-x-2 z-10 relative cursor-pointer group"
+          >
+            <span>Book Appointment</span>
+            <ArrowRight
+              size={20}
+              className="group-hover:translate-x-1 transition-transform"
+            />
+          </button>
+          <button
+            onClick={() => {
+              console.log("Contact Us clicked");
+              setShowContactModal(true);
+            }}
+            className="border-2 border-lime-700 text-lime-700 px-8 py-4 rounded-full hover:bg-lime-700 hover:text-white transition-all duration-300 text-lg font-medium flex items-center justify-center z-10 relative cursor-pointer group"
+          >
+            Contact Us
+          </button>
         </div>
-      </section>
+      </div>
+
+      <div
+        className={`relative transition-all duration-1000 delay-300 ${
+          isVisible
+            ? "translate-y-0 opacity-100"
+            : "translate-y-10 opacity-0"
+        }`}
+      >
+        <div className="relative">
+          <div className="absolute -inset-4 bg-gradient-to-r from-lime-400 to-green-400 rounded-2xl blur-xl opacity-20"></div>
+          <img
+            src={`${API_BASE}/images.php?action=getImage&key=heroImage`}
+            alt="Lizly Skin Care Clinic"
+            className="relative rounded-2xl h-96 w-full object-cover shadow-xl"
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Services Section */}
       <section
