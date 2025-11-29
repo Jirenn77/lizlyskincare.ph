@@ -9,6 +9,9 @@ import {
   Sparkles,
   Phone,
   ChevronDown,
+  User,
+  Calendar,
+  Clock,
   X,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -129,6 +132,17 @@ const handleInputChange = (e) => {
     ...prev,
     [name]: value
   }));
+};
+
+// Add this useEffect to debug modal state
+useEffect(() => {
+  console.log("Booking Modal State:", showBookingModal);
+}, [showBookingModal]);
+
+// Update the button click handler
+const handleBookNowClick = () => {
+  console.log("Book Now button clicked - setting modal to true");
+  setShowBookingModal(true);
 };
 
   const handleServiceScroll = (direction) => {
@@ -361,127 +375,134 @@ const handleInputChange = (e) => {
       </div>
 
       {/* Navigation */}
-      <nav
-        className={`fixed w-full bg-white/80 backdrop-blur-md z-50 shadow-sm transition-all duration-500 ${
-          isVisible ? "translate-y-0" : "-translate-y-full"
-        }`}
-      >
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 group cursor-pointer">
-              <div className="p-3 bg-lime-200 rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-12">
-                <Leaf className="text-lime-700" size={32} />
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-gray-800 block">
-                  Lizly
-                </span>
-                <span className="text-sm bg-gradient-to-r from-lime-700 to-green-600 bg-clip-text text-transparent font-medium">
-                  Skin Care
-                </span>
-              </div>
-            </div>
+<nav
+  className={`fixed w-full bg-white/80 backdrop-blur-md z-50 shadow-sm transition-all duration-500 ${
+    isVisible ? "translate-y-0" : "-translate-y-full"
+  }`}
+>
+  <div className="container mx-auto px-6 py-4">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-3 group cursor-pointer">
+        <div className="p-3 bg-lime-200 rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-12">
+          <Leaf className="text-lime-700" size={32} />
+        </div>
+        <div>
+          <span className="text-2xl font-bold text-gray-800 block">
+            Lizly
+          </span>
+          <span className="text-sm bg-gradient-to-r from-lime-700 to-green-600 bg-clip-text text-transparent font-medium">
+            Skin Care
+          </span>
+        </div>
+      </div>
 
-            <div className="hidden md:flex space-x-8">
-              {["Home", "Services", "About", "Memberships"].map(
-                (item, index) => (
-                  <div key={item} className="relative">
-                    {item === "Services" ? (
-                      <div
-                        onMouseEnter={() => setServicesDropdown(true)}
-                        onMouseLeave={() => setServicesDropdown(false)}
-                        className="relative"
-                      >
-                        <button className="text-gray-600 hover:text-lime-600 transition-all duration-300 font-medium flex items-center space-x-1 group">
-                          <span>{item}</span>
-                          <ChevronDown
-                            size={16}
-                            className={`transition-transform duration-300 ${
-                              servicesDropdown ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
+      <div className="hidden md:flex space-x-8">
+        {["Home", "Services", "About", "Memberships"].map(
+          (item, index) => (
+            <div key={item} className="relative">
+              {item === "Services" ? (
+                <div
+                  onMouseEnter={() => setServicesDropdown(true)}
+                  onMouseLeave={() => setServicesDropdown(false)}
+                  className="relative"
+                >
+                  <button className="text-gray-600 hover:text-lime-600 transition-all duration-300 font-medium flex items-center space-x-1 group">
+                    <span>{item}</span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-300 ${
+                        servicesDropdown ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
 
-                        {/* Services Dropdown Menu */}
-                        {servicesDropdown && (
-                          <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-lime-100 z-50 animate-scaleIn">
-                            <div className="p-4">
-                              <div className="mb-3 pb-2 border-b border-lime-100">
-                                <h3 className="font-semibold text-gray-900 mb-2 text-sm uppercase tracking-wide text-lime-700">
-                                  Special Offers
-                                </h3>
-                                <div className="space-y-2">
-                                  <a
-                                    href="/promos"
-                                    className="block py-2 px-3 rounded-lg hover:bg-lime-50 transition-all duration-200 group"
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-gray-700 group-hover:text-lime-700 font-medium">
-                                        Seasonal Promos
-                                      </span>
-                                      <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
-                                        HOT
-                                      </div>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      Limited time discounts
-                                    </p>
-                                  </a>
-
-                                  <a
-                                    href="/bundles"
-                                    className="block py-2 px-3 rounded-lg hover:bg-lime-50 transition-all duration-200 group"
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-gray-700 group-hover:text-lime-700 font-medium">
-                                        Treatment Bundles
-                                      </span>
-                                      <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                                        SAVE
-                                      </div>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      Package deals & savings
-                                    </p>
-                                  </a>
+                  {/* Services Dropdown Menu */}
+                  {servicesDropdown && (
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-lime-100 z-50 animate-scaleIn">
+                      <div className="p-4">
+                        <div className="mb-3 pb-2 border-b border-lime-100">
+                          <h3 className="font-semibold text-gray-900 mb-2 text-sm uppercase tracking-wide text-lime-700">
+                            Special Offers
+                          </h3>
+                          <div className="space-y-2">
+                            <a
+                              href="/promos"
+                              className="block py-2 px-3 rounded-lg hover:bg-lime-50 transition-all duration-200 group"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-700 group-hover:text-lime-700 font-medium">
+                                  Seasonal Promos
+                                </span>
+                                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                                  HOT
                                 </div>
                               </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Limited time discounts
+                              </p>
+                            </a>
 
-                              <div>
-                                <a
-                                  href="/services"
-                                  className="block py-2 px-3 rounded-lg bg-lime-50 text-lime-700 font-semibold transition-all duration-200 group hover:bg-lime-100 mt-2"
-                                >
-                                  <span className="text-sm">
-                                    View All Services →
-                                  </span>
-                                </a>
+                            <a
+                              href="/bundles"
+                              className="block py-2 px-3 rounded-lg hover:bg-lime-50 transition-all duration-200 group"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-700 group-hover:text-lime-700 font-medium">
+                                  Treatment Bundles
+                                </span>
+                                <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                  SAVE
+                                </div>
                               </div>
-                            </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Package deals & savings
+                              </p>
+                            </a>
                           </div>
-                        )}
+                        </div>
+
+                        <div>
+                          <a
+                            href="/services"
+                            className="block py-2 px-3 rounded-lg bg-lime-50 text-lime-700 font-semibold transition-all duration-200 group hover:bg-lime-100 mt-2"
+                          >
+                            <span className="text-sm">
+                              View All Services →
+                            </span>
+                          </a>
+                        </div>
                       </div>
-                    ) : (
-                      <a
-                        href={`#${item.toLowerCase()}`}
-                        className="text-gray-600 hover:text-lime-600 transition-all duration-300 font-medium relative group"
-                        style={{ animationDelay: `${index * 100}ms` }}
-                      >
-                        {item}
-                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-lime-600 transition-all duration-300 group-hover:w-full"></span>
-                      </a>
-                    )}
-                  </div>
-                )
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <a
+                  href={`#${item.toLowerCase()}`}
+                  className="text-gray-600 hover:text-lime-600 transition-all duration-300 font-medium relative group"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {item}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-lime-600 transition-all duration-300 group-hover:w-full"></span>
+                </a>
               )}
             </div>
+          )
+        )}
+      </div>
 
-            <button onClick={() => setShowBookingModal(true)}>
-  Book Now
-</button>
-          </div>
-        </div>
-      </nav>
+      {/* FIXED: Book Now Button - Added higher z-index and better styling */}
+      <button
+        onClick={() => {
+          console.log("Book Now button clicked");
+          setShowBookingModal(true);
+        }}
+        className="bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-full hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 z-50 relative"
+      >
+        Book Now
+      </button>
+    </div>
+  </div>
+</nav>
 
       {/* Contact Modal */}
       {showContactModal && (
@@ -608,6 +629,210 @@ const handleInputChange = (e) => {
           </div>
         </div>
       )}
+
+      {/* Booking Modal - Fixed z-index and positioning */}
+{showBookingModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold text-gray-900">
+            Book Your Appointment
+          </h3>
+          <button
+            onClick={() => {
+              console.log("Close modal clicked");
+              setShowBookingModal(false);
+            }}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <X size={30} />
+          </button>
+        </div>
+
+        <form onSubmit={handleBookingSubmit} className="space-y-6">
+          {/* Personal Information */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name *
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  name="name"
+                  value={bookingForm.name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                  placeholder="Enter your full name"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number *
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={bookingForm.phone}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                  placeholder="0965 968 9481"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={bookingForm.email}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+              placeholder="your@email.com"
+            />
+          </div>
+
+          {/* Appointment Details */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preferred Branch *
+              </label>
+              <select
+                name="branch"
+                value={bookingForm.branch}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+              >
+                <option value="">Select a branch</option>
+                {branches.map((branch, index) => (
+                  <option key={index} value={branch}>
+                    {branch}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Service Interested *
+              </label>
+              <select
+                name="service"
+                value={bookingForm.service}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+              >
+                <option value="">Select a service</option>
+                {services.map((service, index) => (
+                  <option key={index} value={service}>
+                    {service}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preferred Date *
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="date"
+                  name="date"
+                  value={bookingForm.date}
+                  onChange={handleInputChange}
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preferred Time *
+              </label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <select
+                  name="time"
+                  value={bookingForm.time}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+                >
+                  <option value="">Select time</option>
+                  {timeSlots.map((time, index) => (
+                    <option key={index} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Additional Message
+            </label>
+            <textarea
+              name="message"
+              value={bookingForm.message}
+              onChange={handleInputChange}
+              rows="3"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lime-500 focus:border-lime-500 transition-all"
+              placeholder="Any specific concerns or special requests..."
+            />
+          </div>
+
+          <div className="bg-lime-50 p-4 rounded-xl border border-lime-200">
+            <h4 className="font-semibold text-lime-700 mb-2">
+              📞 Need Immediate Assistance?
+            </h4>
+            <p className="text-gray-700 text-sm">
+              Call us directly at <strong>09659689481</strong> for urgent appointments or inquiries.
+            </p>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowBookingModal(false)}
+              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-lime-600 to-green-600 text-white px-6 py-3 rounded-xl hover:from-lime-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+            >
+              Book Appointment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Hero Section */}
       <section
